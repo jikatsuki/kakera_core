@@ -1,3 +1,7 @@
-# Kakera引擎
+# Kakera Engine Core
 
-这是一个示范性的galgame引擎，与知乎专栏“[从1开始的Galgame引擎制作](https://zhuanlan.zhihu.com/c_1009743633318350848)”同步（或许不太同步）。
+## What's Kakera engine?
+Kakera engine is a 2D GUI/game framework.
+
+## What does "core" mean?
+This project is a runtime library of Kakera engine. Kakera can be developed by any language with the library.
