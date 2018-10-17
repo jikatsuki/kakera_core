@@ -123,6 +123,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\kakera_declaration.h" />
     <ClInclude Include="include\kakera_element.h" />
     <ClInclude Include="include\kakera_main.h" />
     <ClInclude Include="include\kakera_scene.h" />
@@ -131,6 +132,7 @@
     <ClInclude Include="include_private\kakera_structs.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\kakera_element.cpp" />
     <ClCompile Include="src\kakera_main.cpp" />
     <ClCompile Include="src\kakera_scene.cpp" />
     <ClCompile Include="src\kakera_window.cpp" />

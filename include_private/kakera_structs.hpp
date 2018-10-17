@@ -59,10 +59,31 @@ public:
         }
     }
 
-    void Clear(bool useCFree = true)
+    Node* GetNodeByData(T data)
+    {
+        if (_root != nullptr)
+        {
+            Node* result = nullptr;
+            BreadthFirstSearch([&data, &result](Node* node) {
+                if (node->data == data)
+                {
+                    result = node;
+                }
+            });
+            return result;
+        }
+        return nullptr;
+    }
+
+    Node* GetRoot()
+    {
+        return _root;
+    }
+
+    void Clear(bool useCFree = false)
     {
         forward_list<Node*> tempList;
-        BreadthFirstSearch([](node) {
+        BreadthFirstSearch([&tempList](Node* node) {
             tempList.emplace_front(node);
         });
         for (Node* node : tempList)
@@ -133,6 +154,7 @@ public:
         else if (node != nullptr && node == _root)
         {
             Clear();
+            return 0;
         }
         else if (node == nullptr)
         {

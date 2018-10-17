@@ -10,8 +10,7 @@ extern "C"
 
 #include "kakera_main.h"
 #include "kakera_scene.h"
-
-typedef struct kakera_Window;
+#include "kakera_declaration.h"
 
 typedef enum {
     KAKERA_WINDOW_FULLSCREEN            = 1,
