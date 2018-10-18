@@ -134,7 +134,7 @@ public:
         }
     }
 
-    int DeleteNode(Node* node)
+    int DeleteNode(Node* node, bool useCFree = false)
     {
         if (node != nullptr && node != _root)
         {
@@ -148,12 +148,23 @@ public:
             }
             node->parent->children.insert(node->parent->children.end(), node->children.begin(), node->children.end());
             node->children.clear();
+            if (is_pointer<T>::value)
+            {
+                if (useCFree)
+                {
+                    free(node->data);
+                }
+                else
+                {
+                    delete node->data;
+                }
+            }
             delete node;
             return 0;
         }
         else if (node != nullptr && node == _root)
         {
-            Clear();
+            Clear(useCFree);
             return 0;
         }
         else if (node == nullptr)

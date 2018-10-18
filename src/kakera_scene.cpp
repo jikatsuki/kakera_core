@@ -3,17 +3,10 @@
 #include "kakera_header.h"
 #include "kakera_structs.hpp"
 #include "kakera_element.h"
+#include "kakera_part_implementation.h"
 #include <map>
 
 using namespace std;
-
-struct kakera_Scene
-{
-    kakera_Window* window;
-    Tree<kakera_Element*> elementList;
-    map<kakera_SceneEvents, kakera_SceneEventCallback> callbackList;
-    const char* name;
-};
 
 kakera_Scene * kakera_CreateScene(const char * name)
 {
@@ -33,11 +26,6 @@ void kakera_DestroyScene(kakera_Scene * scene)
 const char * kakera_GetSceneName(kakera_Scene* scene)
 {
     return scene->name;
-}
-
-void kakera_BindSceneWithWindow(kakera_Scene * scene, kakera_Window * window)
-{
-    
 }
 
 void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, kakera_Element * parent)

@@ -21,15 +21,15 @@ typedef enum {
     KAKERA_SCENE_ON_RESUME
 } kakera_SceneEvents;
 
-extern KAKERA_EXPORT kakera_Scene* kakera_CreateScene(const char* name);
-extern KAKERA_EXPORT void kakera_DestroyScene(kakera_Scene* scene);
-extern KAKERA_EXPORT const char* kakera_GetSceneName(kakera_Scene* scene);
-extern KAKERA_EXPORT void kakera_BindSceneWithWindow(kakera_Scene* scene, kakera_Window* window);
-extern KAKERA_EXPORT void kakera_AddElementToScene(kakera_Scene* scene, kakera_Element* element, kakera_Element* parent);
+extern KAKERA_EXPORT kakera_Scene*      kakera_CreateScene(const char* name);
+extern KAKERA_EXPORT void               kakera_DestroyScene(kakera_Scene* scene);
+extern KAKERA_EXPORT const char*        kakera_GetSceneName(kakera_Scene* scene);
+extern KAKERA_EXPORT void               kakera_AddElementToScene(kakera_Scene* scene, kakera_Element* element, kakera_Element* parent);
+extern KAKERA_EXPORT kakera_Element*    kakera_GetElementByIDFromScene(kakera_Scene* scene, const char* id);
+extern KAKERA_EXPORT void               kakera_DeleteElementFromScene(kakera_Scene* scene, kakera_Element* element);
+extern KAKERA_EXPORT void               kakera_BindEventToScene(kakera_Scene* scene, kakera_SceneEvents event, kakera_SceneEventCallback callback);
+
 #define kakera_SetRootElementForScene(scene,element) kakera_AddElementToScene(scene, element, NULL)
-extern KAKERA_EXPORT kakera_Element* kakera_GetElementByIDFromScene(kakera_Scene* scene, const char* id);
-extern KAKERA_EXPORT void kakera_DeleteElementFromScene(kakera_Scene* scene, kakera_Element* element);
-extern KAKERA_EXPORT void kakera_BindEventToScene(kakera_Scene* scene, kakera_SceneEvents event, kakera_SceneEventCallback callback);
 
 #ifdef __cplusplus
 }

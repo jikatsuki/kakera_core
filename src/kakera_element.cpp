@@ -1,20 +1,18 @@
+#include "kakera_header.h"
 #include "kakera_element.h"
+#include "kakera_part_implementation.h"
 
 using namespace std;
 
-struct kakera_Element
-{
-    const char* name;
-};
-
 kakera_Element * kakera_CreateElement(const char * id)
 {
-    return nullptr;
+    kakera_Element* result = new kakera_Element;
+    return result;;
 }
 
 void kakera_DestroyElement(kakera_Element * element)
 {
-    
+    delete element;
 }
 
 const char * kakera_GetElementName(kakera_Element * element)

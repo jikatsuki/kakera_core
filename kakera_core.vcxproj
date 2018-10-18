@@ -129,6 +129,8 @@
     <ClInclude Include="include\kakera_scene.h" />
     <ClInclude Include="include\kakera_window.h" />
     <ClInclude Include="include_private\kakera_header.h" />
+    <ClInclude Include="include_private\kakera_part_implementation.h" />
+    <ClInclude Include="include_private\kakera_private_apis.hpp" />
     <ClInclude Include="include_private\kakera_structs.hpp" />
   </ItemGroup>
   <ItemGroup>

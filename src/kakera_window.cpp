@@ -1,18 +1,9 @@
 #include "kakera_window.h"
 #include "kakera_header.h"
-#include <map>
-#include <thread>
+#include "kakera_part_implementation.h"
+#include "kakera_private_apis.hpp"
 
 using namespace std;
-
-struct kakera_Window
-{
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    SDL_semaphore* FPSSem;
-    bool isQuit;
-    map<const char*, kakera_Scene*> sceneList;
-};
 
 unsigned int kakera_GetWindowPosCentered()
 {
@@ -22,11 +13,11 @@ unsigned int kakera_GetWindowPosCentered()
 kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int h, int flags)
 {
     kakera_Window* result = new kakera_Window;
-    result->window        = SDL_CreateWindow(title, x, y, w, h, flags);
-    result->renderer      = SDL_CreateRenderer(result->window, -1, SDL_RENDERER_ACCELERATED);
+    result->window = SDL_CreateWindow(title, x, y, w, h, flags);
+    result->renderer = SDL_CreateRenderer(result->window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawColor(result->renderer, 255, 255, 255, 255);
-    result->FPSSem        = SDL_CreateSemaphore(1);
-    result->isQuit        = false;
+    result->FPSSem = SDL_CreateSemaphore(1);
+    result->isQuit = false;
     return result;
 }
 
@@ -50,6 +41,7 @@ void kakera_RegisterScene(kakera_Window * window, const char* name, kakera_Scene
     {
         window->sceneList[name] = scene;
     }
+    kakera_BindSceneWithWindow(scene, window);
 }
 
 void kakera_GetWindowSize(kakera_Window * window, int * w, int * h)
