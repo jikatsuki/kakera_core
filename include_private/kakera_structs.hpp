@@ -177,4 +177,18 @@ private:
     Node* _root = nullptr;
 };
 
+struct Point
+{
+    int x;
+    int y;
+};
+
+struct Size_2D
+{
+    int w;
+    int h;
+};
+
+using Position_2D = Point;
+
 #endif //!KAKERA_CORE_STRUCTS

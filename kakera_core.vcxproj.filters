@@ -39,9 +39,6 @@
     <ClInclude Include="include\kakera_declaration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include_private\kakera_private_apis.hpp">
-      <Filter>Private Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include_private\kakera_part_implementation.h">
       <Filter>Private Header Files</Filter>
     </ClInclude>

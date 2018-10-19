@@ -1,7 +1,6 @@
 #include "kakera_window.h"
 #include "kakera_header.h"
 #include "kakera_part_implementation.h"
-#include "kakera_private_apis.hpp"
 
 using namespace std;
 
@@ -41,7 +40,7 @@ void kakera_RegisterScene(kakera_Window * window, const char* name, kakera_Scene
     {
         window->sceneList[name] = scene;
     }
-    kakera_BindSceneWithWindow(scene, window);
+    scene->window = window;
 }
 
 void kakera_GetWindowSize(kakera_Window * window, int * w, int * h)

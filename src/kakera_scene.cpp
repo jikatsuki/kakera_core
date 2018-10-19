@@ -30,12 +30,10 @@ const char * kakera_GetSceneName(kakera_Scene* scene)
 
 void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, kakera_Element * parent)
 {
-    Tree<kakera_Element*>::Node* elementNode = new Tree<kakera_Element*>::Node;
-    elementNode->data = element;
     Tree<kakera_Element*>::Node* parentNode;
     if (parent != nullptr)
     {
-        parentNode = scene->elementList.GetNodeByData(parent);
+        parentNode = parent->node;
     }
     else
     {
@@ -48,7 +46,7 @@ void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, ka
             parentNode = nullptr;
         }
     }
-    scene->elementList.InsertNode(elementNode, parentNode);
+    scene->elementList.InsertNode(element->node, parentNode);
 }
 
 kakera_Element * kakera_GetElementByIDFromScene(kakera_Scene * scene, const char * id)
@@ -74,13 +72,5 @@ void kakera_DeleteElementFromScene(kakera_Scene * scene, kakera_Element * elemen
 
 void kakera_BindEventToScene(kakera_Scene * scene, kakera_SceneEvents event, kakera_SceneEventCallback callback)
 {
-    auto iter = scene->callbackList.find(event);
-    if (iter == scene->callbackList.end())
-    {
-        scene->callbackList.emplace(event, callback);
-    }
-    else
-    {
-        scene->callbackList[event] = callback;
-    }
+    scene->callbackList.emplace(event, callback);
 }
