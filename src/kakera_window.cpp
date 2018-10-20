@@ -140,7 +140,9 @@ Uint32 kakera_private_FPSSemCallback(Uint32 interval, void * param)
 
 void kakera_pirvate_RefreshFrame(kakera_Window * window)
 {
+    SDL_RenderClear(window->renderer);
 
+    SDL_RenderPresent(window->renderer);
 }
 
 void kakera_StartWindow(kakera_Window * window)

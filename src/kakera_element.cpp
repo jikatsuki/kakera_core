@@ -10,17 +10,20 @@
 
 using namespace std;
 
-kakera_Element * kakera_CreateElement(const char * id)
+kakera_Element * kakera_CreateElement(const char * name)
 {
     kakera_Element* result = new kakera_Element;
+    result->name = name;
     result->node = new Tree<kakera_Element*>::Node;
     result->node->data = result;
     result->isResponseEvent = true;
-    return result;;
+    result->rotateAngle = 0;
+    return result;
 }
 
 void kakera_DestroyElement(kakera_Element * element)
 {
+    kakera_RunCallback(element, KAKERA_ELEMENT_ON_DESTROY);
     element->scene->elementList.DeleteNode(element->node);
     delete element;
 }
@@ -84,7 +87,9 @@ void kakera_BindEvedntToElement(kakera_Element * element, kakera_ElementEvents e
 
 char * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
 {
-    SDL_Surface* surface = SDL_CreateRGBSurface(0, w, h, 32, 0, 0, 0, 0);
+    SDL_Surface* RAWSurface = SDL_CreateRGBSurface(0, w, h, 32, 0, 0, 0, 0);
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
+    SDL_FreeSurface(RAWSurface);
     SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, r, g, b));
     int pixelSize = surface->pitch * surface->h;
     char* result = new char[pixelSize];
@@ -95,7 +100,9 @@ char * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
 
 char * kakera_GetPixelsFromPicture(const char * picture)
 {
-    SDL_Surface* surface = IMG_Load_RW(SDL_RWFromConstMem(picture, strlen(picture)), 1);
+    SDL_Surface* RAWSurface = IMG_Load_RW(SDL_RWFromConstMem(picture, strlen(picture)), 1);
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
+    SDL_FreeSurface(RAWSurface);
     int pixelSize = surface->pitch * surface->h;
     char* result = new char[pixelSize];
     memcpy(result, surface->pixels, pixelSize);
@@ -107,7 +114,9 @@ char * kakera_GetPixelsFromText(const char * font, int size, uint8_t r, uint8_t 
 {
     TTF_Font* SDLFont = TTF_OpenFontRW(SDL_RWFromConstMem(font, strlen(font)), 1, size);
     TTF_SetFontStyle(SDLFont, style);
-    SDL_Surface* surface = TTF_RenderUTF8_Blended(SDLFont, text, { r, g, b });
+    SDL_Surface* RAWSurface = TTF_RenderUTF8_Blended(SDLFont, text, { r, g, b });
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
+    SDL_FreeSurface(RAWSurface);
     TTF_CloseFont(SDLFont);
     int pixelSize = surface->pitch * surface->h;
     char* result = new char[pixelSize];
@@ -118,24 +127,17 @@ char * kakera_GetPixelsFromText(const char * font, int size, uint8_t r, uint8_t 
     return result;
 }
 
-void kakera_SetElementContentComplex(kakera_Element* element, kakera_PixelFormats format, bool isStatic, void* pixels)
+void kakera_SetElementContent(kakera_Element* element, kakera_PixelFormats format, void* pixels)
 {
-    int SDLFormat;
-    if (format == PIXEL_FORMAT_RGBA8888)
+    int SDLFormat, SDLAccess;
+    if (format == ELEMENT_TYPE_STATIC)
     {
         SDLFormat = SDL_PIXELFORMAT_RGBA8888;
-    }
-    else
-    {
-        SDLFormat = SDL_PIXELFORMAT_IYUV;
-    }
-    int SDLAccess;
-    if (isStatic)
-    {
         SDLAccess = SDL_TEXTUREACCESS_STATIC;
     }
     else
     {
+        SDLFormat = SDL_PIXELFORMAT_IYUV;
         SDLAccess = SDL_TEXTUREACCESS_STREAMING;
     }
     element->texture = SDL_CreateTexture(element->scene->window->renderer, SDLFormat, SDLAccess, element->realSize.w, element->realSize.h);
@@ -145,4 +147,23 @@ void kakera_SetElementContentComplex(kakera_Element* element, kakera_PixelFormat
 void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
 {
     SDL_SetTextureAlphaMod(element->texture, opacity);
+    if (!element->node->children.empty())
+    {
+        for (auto node : element->node->children)
+        {
+            SDL_SetTextureAlphaMod(node->data->texture, opacity);
+        }
+    }
+}
+
+void kakera_RotateElement(kakera_Element * element, double angle)
+{
+    element->rotateAngle = angle;
+    if (!element->node->children.empty())
+    {
+        for (auto node : element->node->children)
+        {
+            node->data->rotateAngle = angle;
+        }
+    }
 }

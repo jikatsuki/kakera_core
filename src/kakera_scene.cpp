@@ -12,12 +12,13 @@ kakera_Scene * kakera_CreateScene(const char * name)
 {
     kakera_Scene* result = new kakera_Scene;
     result->name = name;
+    //kakera_RunCallback(result, KAKERA_SCENE_ON_CREATE);
     return result;
 }
 
 void kakera_DestroyScene(kakera_Scene * scene)
 {
-    scene->callbackList[KAKERA_SCENE_ON_DESTROY](scene);
+    kakera_RunCallback(scene, KAKERA_SCENE_ON_DESTROY);
     scene->elementList.Clear();
     scene->callbackList.clear();
     delete scene;
@@ -46,6 +47,7 @@ void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, ka
             parentNode = nullptr;
         }
     }
+    kakera_RunCallback(element, KAKERA_ELEMENT_ON_CREATE);
     scene->elementList.InsertNode(element->node, parentNode);
 }
 

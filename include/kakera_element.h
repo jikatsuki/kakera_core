@@ -12,25 +12,39 @@ extern "C"
 #include <stdint.h>
 
 typedef enum {
-
+    KAKERA_ELEMENT_ON_BLUR,
+    KAKERA_ELEMENT_ON_CREATE,
+    KAKERA_ELEMENT_ON_CLICK,
+    KAKERA_ELEMENT_ON_DESTROY,
+    KAKERA_ELEMENT_ON_DOUBLE_CLICK,
+    KAKERA_ELEMENT_ON_FOCUS,
+    KAKERA_ELEMENT_ON_KEY_DOWN,
+    KAKERA_ELEMENT_ON_KEY_UP,
+    KAKERA_ELEMENT_ON_MOUSE_DOWN,
+    KAKERA_ELEMENT_ON_MOUSE_ENTER,
+    KAKERA_ELEMENT_ON_MOUSE_LEAVE,
+    KAKERA_ELEMENT_ON_MOUSE_MOVE,
+    KAKERA_ELEMENT_ON_MOUSE_UP,
+    KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL,
+    KAKERA_ELEMENT_ON_FRAME_REFRESH
 } kakera_ElementEvents;
 
 typedef enum {
-    TEXT_STYLE_NORMAL = 0,
-    TEXT_STYLE_BOLD = 1,
-    TEXT_STYLE_ITALIC = 2,
-    TEXT_STYLE_UNDERLINE = 4,
-    TEXT_STYLE_STRIKETHROUGH = 8
+    KAKERA_TEXT_STYLE_NORMAL = 0,
+    KAKERA_TEXT_STYLE_BOLD = 1,
+    KAKERA_TEXT_STYLE_ITALIC = 2,
+    KAKERA_TEXT_STYLE_UNDERLINE = 4,
+    KAKERA_TEXT_STYLE_STRIKETHROUGH = 8
 } kakera_TextStyles;
 
 typedef enum {
-    PIXEL_FORMAT_RGBA8888,
-    PIXEL_FORMAT_IYUV
+    ELEMENT_TYPE_STATIC,
+    ELEMENT_TYPE_VIDEO
 } kakera_PixelFormats;
 
 typedef void(*kakera_ElementEventCallback)(kakera_Element*);
 
-extern KAKERA_EXPORT kakera_Element* kakera_CreateElement(const char* id);
+extern KAKERA_EXPORT kakera_Element* kakera_CreateElement(const char* name);
 extern KAKERA_EXPORT void kakera_DestroyElement(kakera_Element* element);
 extern KAKERA_EXPORT void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h);
 extern KAKERA_EXPORT void kakera_GetElementDisplaySize(kakera_Element* element, int* w, int* h);
@@ -45,10 +59,9 @@ extern KAKERA_EXPORT void kakera_BindEvedntToElement(kakera_Element* element, ka
 extern KAKERA_EXPORT char* kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b);
 extern KAKERA_EXPORT char* kakera_GetPixelsFromPicture(const char* picture);
 extern KAKERA_EXPORT char* kakera_GetPixelsFromText(const char* font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char* text, int* finalW, int* finalH);
-extern KAKERA_EXPORT void kakera_SetElementContentComplex(kakera_Element* element, kakera_PixelFormats format, bool isStatic, void* pixels);
+extern KAKERA_EXPORT void kakera_SetElementContent(kakera_Element* element, kakera_PixelFormats format, void* pixels);
 extern KAKERA_EXPORT void kakera_SetElementOpacity(kakera_Element* element, uint8_t opacity);
-
-#define kakera_SetElementContent(element,pixels) kakera_SetElementContentComplex(element, PIXEL_FORMAT_RGBA8888, true, pixels)
+extern KAKERA_EXPORT void kakera_RotateElement(kakera_Element* element, double angle);
 
 #ifdef __cplusplus
 }

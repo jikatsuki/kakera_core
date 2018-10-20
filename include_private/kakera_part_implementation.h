@@ -39,6 +39,7 @@ struct kakera_Element
     Position_2D viewport;
     Size_2D displaySize;
     Size_2D realSize;
+    double rotateAngle;
 };
 
 #endif //!KAKERA_CORE_PART_IMPLEMENTATION

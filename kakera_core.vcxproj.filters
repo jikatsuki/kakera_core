@@ -42,6 +42,9 @@
     <ClInclude Include="include_private\kakera_part_implementation.h">
       <Filter>Private Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\kakera_file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\kakera_window.cpp">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\kakera_element.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kakera_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
