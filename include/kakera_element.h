@@ -44,7 +44,8 @@ typedef enum {
 
 typedef void(*kakera_ElementEventCallback)(kakera_Element*);
 
-extern KAKERA_EXPORT kakera_Element* kakera_CreateElement(const char* name);
+extern KAKERA_EXPORT kakera_Element* kakera_CreateElement();
+extern KAKERA_EXPORT void kakera_InitailizeElement(kakera_Element* element, const char* name);
 extern KAKERA_EXPORT void kakera_DestroyElement(kakera_Element* element);
 extern KAKERA_EXPORT void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h);
 extern KAKERA_EXPORT void kakera_GetElementDisplaySize(kakera_Element* element, int* w, int* h);

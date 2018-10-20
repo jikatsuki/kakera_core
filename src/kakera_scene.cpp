@@ -8,12 +8,16 @@
 
 using namespace std;
 
-kakera_Scene * kakera_CreateScene(const char * name)
+kakera_Scene * kakera_CreateScene()
 {
-    kakera_Scene* result = new kakera_Scene;
-    result->name = name;
-    //kakera_RunCallback(result, KAKERA_SCENE_ON_CREATE);
+    auto result = new kakera_Scene;
     return result;
+}
+
+void kakera_InitializeScene(kakera_Scene* scene, const char * name)
+{
+    scene->name = name;
+    kakera_RunCallback(scene, KAKERA_SCENE_ON_CREATE);
 }
 
 void kakera_DestroyScene(kakera_Scene * scene)

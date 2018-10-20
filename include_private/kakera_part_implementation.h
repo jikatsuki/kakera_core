@@ -33,13 +33,13 @@ struct kakera_Element
     const char* name;
     SDL_Texture* texture;
     Tree<kakera_Element*>::Node* node;
-    bool isResponseEvent;
+    bool isResponseEvent = true;
     map<kakera_ElementEvents, kakera_ElementEventCallback> callbackList;
     Position_2D position;
     Position_2D viewport;
     Size_2D displaySize;
     Size_2D realSize;
-    double rotateAngle;
+    double rotateAngle = 0.0;
 };
 
 #endif //!KAKERA_CORE_PART_IMPLEMENTATION

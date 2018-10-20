@@ -21,7 +21,8 @@ typedef enum {
     KAKERA_SCENE_ON_RESUME
 } kakera_SceneEvents;
 
-extern KAKERA_EXPORT kakera_Scene*      kakera_CreateScene(const char* name);
+extern KAKERA_EXPORT kakera_Scene*      kakera_CreateScene();
+extern KAKERA_EXPORT void               kakera_InitializeScene(kakera_Scene* scene, const char* name);
 extern KAKERA_EXPORT void               kakera_DestroyScene(kakera_Scene* scene);
 extern KAKERA_EXPORT const char*        kakera_GetSceneName(kakera_Scene* scene);
 extern KAKERA_EXPORT void               kakera_AddElementToScene(kakera_Scene* scene, kakera_Element* element, kakera_Element* parent);

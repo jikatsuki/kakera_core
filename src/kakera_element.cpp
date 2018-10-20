@@ -10,15 +10,18 @@
 
 using namespace std;
 
-kakera_Element * kakera_CreateElement(const char * name)
+kakera_Element * kakera_CreateElement()
 {
-    kakera_Element* result = new kakera_Element;
-    result->name = name;
-    result->node = new Tree<kakera_Element*>::Node;
-    result->node->data = result;
-    result->isResponseEvent = true;
-    result->rotateAngle = 0;
+    auto result = new kakera_Element;
     return result;
+}
+
+void kakera_InitailizeElement(kakera_Element * element, const char * name)
+{
+    element->name = name;
+    element->node = new Tree<kakera_Element*>::Node;
+    element->node->data = element;
+    kakera_RunCallback(element, KAKERA_ELEMENT_ON_CREATE);
 }
 
 void kakera_DestroyElement(kakera_Element * element)

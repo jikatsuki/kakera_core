@@ -179,14 +179,14 @@ private:
 
 struct Point
 {
-    int x;
-    int y;
+    int x = 0;
+    int y = 0;
 };
 
 struct Size_2D
 {
-    int w;
-    int h;
+    int w = 0;
+    int h = 0;
 };
 
 using Position_2D = Point;
