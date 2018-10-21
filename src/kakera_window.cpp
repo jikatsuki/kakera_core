@@ -29,20 +29,6 @@ int kakera_DestroyWindow(kakera_Window * window)
     return 0;
 }
 
-void kakera_RegisterScene(kakera_Window * window, const char* name, kakera_Scene * scene)
-{
-    auto iter = window->sceneList.find(name);
-    if (iter == window->sceneList.end())
-    {
-        window->sceneList.emplace(name, scene);
-    }
-    else
-    {
-        window->sceneList[name] = scene;
-    }
-    scene->window = window;
-}
-
 void kakera_GetWindowSize(kakera_Window * window, int * w, int * h)
 {
     SDL_GetWindowSize(window->window, w, h);

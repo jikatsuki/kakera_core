@@ -14,9 +14,8 @@ kakera_Scene * kakera_CreateScene()
     return result;
 }
 
-void kakera_InitializeScene(kakera_Scene* scene, const char * name)
+void kakera_InitializeScene(kakera_Scene* scene)
 {
-    scene->name = name;
     kakera_RunCallback(scene, KAKERA_SCENE_ON_CREATE);
 }
 
@@ -28,9 +27,9 @@ void kakera_DestroyScene(kakera_Scene * scene)
     delete scene;
 }
 
-const char * kakera_GetSceneName(kakera_Scene* scene)
+void kakera_BindSceneWithWindow(kakera_Scene * scene, kakera_Window * window)
 {
-    return scene->name;
+    scene->window = window;
 }
 
 void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, kakera_Element * parent)
@@ -51,15 +50,14 @@ void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, ka
             parentNode = nullptr;
         }
     }
-    kakera_RunCallback(element, KAKERA_ELEMENT_ON_CREATE);
     scene->elementList.InsertNode(element->node, parentNode);
 }
 
-kakera_Element * kakera_GetElementByIDFromScene(kakera_Scene * scene, const char * id)
+kakera_Element * kakera_GetElementByNameFromScene(kakera_Scene * scene, const char * name)
 {
     kakera_Element* result = nullptr;
-    scene->elementList.BreadthFirstSearch([&id, &result](Tree<kakera_Element*>::Node* node) {
-        if (id == kakera_GetElementName(node->data))
+    scene->elementList.BreadthFirstSearch([&name, &result](Tree<kakera_Element*>::Node* node) {
+        if (name == kakera_GetElementName(node->data))
         {
             result = node->data;
         }
@@ -79,4 +77,14 @@ void kakera_DeleteElementFromScene(kakera_Scene * scene, kakera_Element * elemen
 void kakera_BindEventToScene(kakera_Scene * scene, kakera_SceneEvents event, kakera_SceneEventCallback callback)
 {
     scene->callbackList.emplace(event, callback);
+}
+
+void kakera_StartScene(kakera_Window * window, kakera_Scene * scene)
+{
+    if (window->activeScene != nullptr)
+    {
+        kakera_RunCallback(window->activeScene, KAKERA_SCENE_ON_STOP);
+    }
+    window->activeScene = scene;
+    kakera_RunCallback(scene, KAKERA_SCENE_ON_START);
 }

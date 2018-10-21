@@ -17,6 +17,7 @@ struct kakera_Window
     SDL_semaphore* FPSSem;
     bool isQuit;
     map<const char*, kakera_Scene*> sceneList;
+    kakera_Scene* activeScene = nullptr;
 };
 
 struct kakera_Scene
@@ -24,7 +25,6 @@ struct kakera_Scene
     kakera_Window* window;
     Tree<kakera_Element*> elementList;
     map<kakera_SceneEvents, kakera_SceneEventCallback> callbackList;
-    const char* name;
 };
 
 struct kakera_Element

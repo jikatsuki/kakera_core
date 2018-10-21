@@ -123,6 +123,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\kakera_apis.h" />
     <ClInclude Include="include\kakera_declaration.h" />
     <ClInclude Include="include\kakera_element.h" />
     <ClInclude Include="include\kakera_file.h" />
