@@ -38,15 +38,14 @@ typedef enum {
 } kakera_TextStyles;
 
 typedef enum {
-    ELEMENT_TYPE_STATIC,
-    ELEMENT_TYPE_VIDEO
+    KAKERA_ELEMENT_TYPE_STATIC,
+    KAKERA_ELEMENT_TYPE_VIDEO
 } kakera_PixelFormats;
 
 typedef void(*kakera_ElementEventCallback)(kakera_Element*);
 
 extern KAKERA_EXPORT kakera_Element* kakera_CreateElement();
 extern KAKERA_EXPORT void kakera_InitailizeElement(kakera_Element* element, const char* name);
-extern KAKERA_EXPORT void kakera_DestroyElement(kakera_Element* element);
 extern KAKERA_EXPORT void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h);
 extern KAKERA_EXPORT void kakera_GetElementDisplaySize(kakera_Element* element, int* w, int* h);
 extern KAKERA_EXPORT void kakera_SetElementRealSize(kakera_Element* element, int w, int h);
@@ -58,11 +57,13 @@ extern KAKERA_EXPORT const char* kakera_GetElementName(kakera_Element* element);
 extern KAKERA_EXPORT void kakera_SetIsElementResponseEvent(kakera_Element* element, bool response);
 extern KAKERA_EXPORT void kakera_BindEvedntToElement(kakera_Element* element, kakera_ElementEvents event, kakera_ElementEventCallback callback);
 extern KAKERA_EXPORT char* kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b);
-extern KAKERA_EXPORT char* kakera_GetPixelsFromPicture(const char* picture);
-extern KAKERA_EXPORT char* kakera_GetPixelsFromText(const char* font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char* text, int* finalW, int* finalH);
+extern KAKERA_EXPORT char* kakera_GetPixelsFromPicture(const kakera_File * picture);
+extern KAKERA_EXPORT char* kakera_GetPixelsFromText(const kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text, int* finalW, int* finalH);
 extern KAKERA_EXPORT void kakera_SetElementContent(kakera_Element* element, kakera_PixelFormats format, void* pixels);
 extern KAKERA_EXPORT void kakera_SetElementOpacity(kakera_Element* element, uint8_t opacity);
 extern KAKERA_EXPORT void kakera_RotateElement(kakera_Element* element, double angle);
+
+KAKERA_DEPRECATED extern KAKERA_EXPORT void kakera_DestroyElement(kakera_Element* element);
 
 #ifdef __cplusplus
 }

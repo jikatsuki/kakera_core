@@ -13,14 +13,14 @@ using namespace std;
 kakera_Element * kakera_CreateElement()
 {
     auto result = new kakera_Element;
+    result->node = new Tree<kakera_Element*>::Node;
+    result->node->data = result;
     return result;
 }
 
 void kakera_InitailizeElement(kakera_Element * element, const char * name)
 {
     element->name = name;
-    element->node = new Tree<kakera_Element*>::Node;
-    element->node->data = element;
     kakera_RunCallback(element, KAKERA_ELEMENT_ON_CREATE);
 }
 
@@ -101,9 +101,10 @@ char * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
     return result;
 }
 
-char * kakera_GetPixelsFromPicture(const char * picture)
+char * kakera_GetPixelsFromPicture(const kakera_File * picture)
 {
-    SDL_Surface* RAWSurface = IMG_Load_RW(SDL_RWFromConstMem(picture, strlen(picture)), 1);
+    SDL_Surface* RAWSurface = IMG_Load_RW(SDL_RWFromConstMem(picture->data, picture->size), 1);
+    delete picture;
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
     int pixelSize = surface->pitch * surface->h;
@@ -113,14 +114,15 @@ char * kakera_GetPixelsFromPicture(const char * picture)
     return result;
 }
 
-char * kakera_GetPixelsFromText(const char * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text, int* finalW, int* finalH)
+char * kakera_GetPixelsFromText(const kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text, int* finalW, int* finalH)
 {
-    TTF_Font* SDLFont = TTF_OpenFontRW(SDL_RWFromConstMem(font, strlen(font)), 1, size);
+    TTF_Font* SDLFont = TTF_OpenFontRW(SDL_RWFromConstMem(font->data, font->size), 1, size);
     TTF_SetFontStyle(SDLFont, style);
     SDL_Surface* RAWSurface = TTF_RenderUTF8_Blended(SDLFont, text, { r, g, b });
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
     TTF_CloseFont(SDLFont);
+    delete font;
     int pixelSize = surface->pitch * surface->h;
     char* result = new char[pixelSize];
     memcpy(result, surface->pixels, pixelSize);
@@ -133,7 +135,7 @@ char * kakera_GetPixelsFromText(const char * font, int size, uint8_t r, uint8_t 
 void kakera_SetElementContent(kakera_Element* element, kakera_PixelFormats format, void* pixels)
 {
     int SDLFormat, SDLAccess;
-    if (format == ELEMENT_TYPE_STATIC)
+    if (format == KAKERA_ELEMENT_TYPE_STATIC)
     {
         SDLFormat = SDL_PIXELFORMAT_RGBA8888;
         SDLAccess = SDL_TEXTUREACCESS_STATIC;

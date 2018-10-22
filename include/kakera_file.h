@@ -9,7 +9,7 @@ extern "C"
 #include "kakera_main.h"
 #include "kakera_declaration.h"
 
-extern KAKERA_EXPORT char* kakera_ReadFile(const char* filepath);
+extern KAKERA_EXPORT kakera_File* kakera_ReadFile(const char* filepath);
 
 #ifdef __cplusplus
 }

@@ -11,6 +11,7 @@ extern "C"
 
 #define KAKERA_CORE_BUILDIN
 #ifdef _MSC_VER
+    //
     #ifdef KAKERA_CORE_BUILDIN
         #define KAKERA_EXPORT __declspec(dllexport)
     #else
@@ -19,6 +20,14 @@ extern "C"
 #else
     #define KAKERA_EXPORT
 #endif //!_MSC_VER
+
+#ifdef _MSC_VER
+    #define KAKERA_DEPRECATED __declspec(deprecated)
+#elif __GNUC__
+    #define KAKERA_DEPRECATED __attribute__((deprecated))
+#else
+    #define KAKERA_DEPRECATED
+#endif
 
 extern KAKERA_EXPORT void kakera_Initialize();
 extern KAKERA_EXPORT void kakera_Terminate();

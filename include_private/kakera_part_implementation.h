@@ -42,4 +42,10 @@ struct kakera_Element
     double rotateAngle = 0.0;
 };
 
+struct kakera_File
+{
+    int size;
+    char* data;
+};
+
 #endif //!KAKERA_CORE_PART_IMPLEMENTATION
