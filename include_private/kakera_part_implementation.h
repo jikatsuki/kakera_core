@@ -31,7 +31,7 @@ struct kakera_Element
 {
     kakera_Scene* scene;
     const char* name;
-    SDL_Texture* texture;
+    SDL_Texture* texture = nullptr;
     Tree<kakera_Element*>::Node* node;
     bool isResponseEvent = true;
     map<kakera_ElementEvents, kakera_ElementEventCallback> callbackList;

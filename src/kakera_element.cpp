@@ -146,6 +146,7 @@ void kakera_SetElementContent(kakera_Element* element, kakera_PixelFormats forma
         SDLAccess = SDL_TEXTUREACCESS_STREAMING;
     }
     element->texture = SDL_CreateTexture(element->scene->window->renderer, SDLFormat, SDLAccess, element->realSize.w, element->realSize.h);
+    SDL_UpdateTexture(element->texture, NULL, pixels, element->realSize.w * 4);
     SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
 }
 

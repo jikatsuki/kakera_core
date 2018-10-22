@@ -51,6 +51,7 @@ void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, ka
         }
     }
     scene->elementList.InsertNode(element->node, parentNode);
+    element->scene = scene;
 }
 
 kakera_Element * kakera_GetElementByNameFromScene(kakera_Scene * scene, const char * name)

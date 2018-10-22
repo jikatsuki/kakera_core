@@ -1,6 +1,7 @@
 #include "kakera_window.h"
 #include "kakera_header.h"
 #include "kakera_part_implementation.h"
+#include <forward_list>
 
 using namespace std;
 
@@ -127,7 +128,26 @@ Uint32 kakera_private_FPSSemCallback(Uint32 interval, void * param)
 void kakera_pirvate_RefreshFrame(kakera_Window * window)
 {
     SDL_RenderClear(window->renderer);
-
+    if (window->activeScene != nullptr)
+    {
+        forward_list<kakera_Element*> elementList;
+        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+            elementList.emplace_front(node->data);
+        });
+        elementList.reverse();
+        for (auto element : elementList)
+        {
+            SDL_RenderCopyEx(
+                window->renderer,
+                element->texture,
+                NULL,
+                new SDL_Rect({ element->position.x, element->position.y, element->displaySize.w, element->displaySize.h }),
+                element->rotateAngle,
+                NULL,
+                SDL_FLIP_NONE
+            );
+        }
+    }
     SDL_RenderPresent(window->renderer);
 }
 
