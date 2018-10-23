@@ -42,10 +42,16 @@ typedef enum {
     KAKERA_ELEMENT_TYPE_VIDEO
 } kakera_PixelFormats;
 
+typedef enum {
+    KAKERA_POSREFER_PARENT,
+    KAKERA_POSREFER_SCENE,
+    KAKERA_POSREFER_WINDOW
+} kakera_PositionReference;
+
 typedef void(*kakera_ElementEventCallback)(kakera_Element*);
 
 extern KAKERA_EXPORT kakera_Element* kakera_CreateElement();
-extern KAKERA_EXPORT void kakera_InitailizeElement(kakera_Element* element, kakera_PixelFormats format, const char* name);
+extern KAKERA_EXPORT void kakera_InitailizeElementComplex(kakera_Element* element, kakera_PixelFormats format, kakera_PositionReference reference, const char* name);
 extern KAKERA_EXPORT void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h);
 extern KAKERA_EXPORT void kakera_GetElementDisplaySize(kakera_Element* element, int* w, int* h);
 extern KAKERA_EXPORT void kakera_SetElementRealSize(kakera_Element* element, int w, int h);
@@ -63,6 +69,8 @@ extern KAKERA_EXPORT void kakera_SetElementContent(kakera_Element* element, void
 extern KAKERA_EXPORT void kakera_SetElementContentByYUVPixels(kakera_Element* element, void* YPixels, void* UPixels, void* VPixels, int YPitch, int UPitch, int VPitch);
 extern KAKERA_EXPORT void kakera_SetElementOpacity(kakera_Element* element, uint8_t opacity);
 extern KAKERA_EXPORT void kakera_RotateElement(kakera_Element* element, double angle);
+
+#define kakera_InitailizeElement(element,name) kakera_InitailizeElementComplex(element, KAKERA_ELEMENT_TYPE_STATIC, KAKERA_POSREFER_PARENT, name);
 
 KAKERA_DEPRECATED extern KAKERA_EXPORT void kakera_DestroyElement(kakera_Element* element);
 

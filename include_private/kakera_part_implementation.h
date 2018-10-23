@@ -4,6 +4,7 @@
 #include "kakera_declaration.h"
 #include "kakera_header.h"
 #include "kakera_structs.hpp"
+#include "kakera_window.h"
 #include "kakera_scene.h"
 #include "kakera_element.h"
 #include <map>
@@ -18,6 +19,7 @@ struct kakera_Window
     bool isQuit;
     map<const char*, kakera_Scene*> sceneList;
     kakera_Scene* activeScene = nullptr;
+    kakera_WindowFPS FPS = KAKERA_WINDOW_30FPS;
 };
 
 struct kakera_Scene
@@ -42,6 +44,7 @@ struct kakera_Element
     double rotateAngle = 0.0;
     int SDLFormat;
     int SDLAccess;
+    kakera_PositionReference reference;
 };
 
 struct kakera_File

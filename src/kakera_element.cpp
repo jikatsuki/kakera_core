@@ -18,9 +18,10 @@ kakera_Element * kakera_CreateElement()
     return result;
 }
 
-void kakera_InitailizeElement(kakera_Element * element, kakera_PixelFormats format, const char * name)
+void kakera_InitailizeElementComplex(kakera_Element * element, kakera_PixelFormats format, kakera_PositionReference reference, const char * name)
 {
     element->name = name;
+    element->reference = reference;
     if (format == KAKERA_ELEMENT_TYPE_STATIC)
     {
         element->SDLFormat = SDL_PIXELFORMAT_RGBA8888;

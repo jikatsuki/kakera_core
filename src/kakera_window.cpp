@@ -1,6 +1,8 @@
 #include "kakera_window.h"
 #include "kakera_header.h"
 #include "kakera_part_implementation.h"
+#include "kakera_structs.hpp"
+#include "kakera_element.h"
 #include <forward_list>
 
 using namespace std;
@@ -99,9 +101,17 @@ void kakera_SetWindowResizeable(kakera_Window * window, bool resizeable)
     SDL_SetWindowResizable(window->window, flag);
 }
 
-void kakera_SetWindowIcon(kakera_Window * window)
+void kakera_SetWindowIcon(kakera_Window * window, kakera_File* icon)
 {
-    //SDL_SetWindowIcon();
+    SDL_Surface* iconSurface = IMG_Load_RW(SDL_RWFromConstMem(icon->data, icon->size), 1);
+    delete icon;
+    SDL_SetWindowIcon(window->window, iconSurface);
+    SDL_FreeSurface(iconSurface);
+}
+
+void kakera_SetWindowFPS(kakera_Window * window, kakera_WindowFPS FPS)
+{
+    window->FPS = FPS;
 }
 
 int kakera_private_EventFilter(void * userdata, SDL_Event * event)
@@ -136,16 +146,36 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
         });
         elementList.reverse();
         for (auto element : elementList)
-        {
-            SDL_RenderCopyEx(
-                window->renderer,
-                element->texture,
-                NULL,
-                new SDL_Rect({ element->position.x, element->position.y, element->displaySize.w, element->displaySize.h }),
-                element->rotateAngle,
-                NULL,
-                SDL_FLIP_NONE
-            );
+        {            
+            if (element->texture != nullptr)
+            {
+                switch (element->reference)
+                {
+                case KAKERA_POSREFER_PARENT:
+                {
+                    break;
+                }
+                case KAKERA_POSREFER_SCENE:
+                {
+                    break;
+                }
+                case KAKERA_POSREFER_WINDOW:
+                {
+                    SDL_RenderCopyEx(
+                        window->renderer,
+                        element->texture,
+                        NULL,
+                        new SDL_Rect({ element->position.x, element->position.y, element->displaySize.w, element->displaySize.h }),
+                        element->rotateAngle,
+                        NULL,
+                        SDL_FLIP_NONE
+                    );
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
         }
     }
     SDL_RenderPresent(window->renderer);
@@ -157,7 +187,7 @@ void kakera_StartWindow(kakera_Window * window)
     SDL_SetEventFilter(kakera_private_EventFilter, window);
     while (!window->isQuit)
     {
-        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / 60, kakera_private_FPSSemCallback, window);
+        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / window->FPS, kakera_private_FPSSemCallback, window);
         kakera_pirvate_RefreshFrame(window);
         SDL_PollEvent(&event);
         SDL_SemWait(window->FPSSem);
