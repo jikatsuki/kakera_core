@@ -40,6 +40,8 @@ struct kakera_Element
     Size_2D displaySize;
     Size_2D realSize;
     double rotateAngle = 0.0;
+    int SDLFormat;
+    int SDLAccess;
 };
 
 struct kakera_File

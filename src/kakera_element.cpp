@@ -18,10 +18,20 @@ kakera_Element * kakera_CreateElement()
     return result;
 }
 
-void kakera_InitailizeElement(kakera_Element * element, const char * name)
+void kakera_InitailizeElement(kakera_Element * element, kakera_PixelFormats format, const char * name)
 {
     element->name = name;
-    kakera_RunCallback(element, KAKERA_ELEMENT_ON_CREATE);
+    if (format == KAKERA_ELEMENT_TYPE_STATIC)
+    {
+        element->SDLFormat = SDL_PIXELFORMAT_RGBA8888;
+        element->SDLAccess = SDL_TEXTUREACCESS_STATIC;
+    }
+    else
+    {
+        element->SDLFormat = SDL_PIXELFORMAT_IYUV;
+        element->SDLAccess = SDL_TEXTUREACCESS_STREAMING;
+    }    
+    kakera_RunCallback(element, KAKERA_ELEMENT_ON_CREATE);    
 }
 
 void kakera_DestroyElement(kakera_Element * element)
@@ -83,7 +93,7 @@ void kakera_SetIsElementResponseEvent(kakera_Element * element, bool response)
     element->isResponseEvent = response;
 }
 
-void kakera_BindEvedntToElement(kakera_Element * element, kakera_ElementEvents event, kakera_ElementEventCallback callback)
+void kakera_BindEventToElement(kakera_Element * element, kakera_ElementEvents event, kakera_ElementEventCallback callback)
 {
     element->callbackList.emplace(event, callback);
 }
@@ -132,22 +142,28 @@ char * kakera_GetPixelsFromText(const kakera_File * font, int size, uint8_t r, u
     return result;
 }
 
-void kakera_SetElementContent(kakera_Element* element, kakera_PixelFormats format, void* pixels)
+void kakera_SetElementContent(kakera_Element* element, void* pixels)
 {
-    int SDLFormat, SDLAccess;
-    if (format == KAKERA_ELEMENT_TYPE_STATIC)
+    if (element->texture == nullptr)
     {
-        SDLFormat = SDL_PIXELFORMAT_RGBA8888;
-        SDLAccess = SDL_TEXTUREACCESS_STATIC;
+        element->texture = SDL_CreateTexture(element->scene->window->renderer, element->SDLFormat, element->SDLAccess, element->realSize.w, element->realSize.h);
+        SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
     }
-    else
-    {
-        SDLFormat = SDL_PIXELFORMAT_IYUV;
-        SDLAccess = SDL_TEXTUREACCESS_STREAMING;
-    }
-    element->texture = SDL_CreateTexture(element->scene->window->renderer, SDLFormat, SDLAccess, element->realSize.w, element->realSize.h);
     SDL_UpdateTexture(element->texture, NULL, pixels, element->realSize.w * 4);
-    SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
+}
+
+void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixels, void * UPixels, void * VPixels, int YPitch, int UPitch, int VPitch)
+{
+    if (element->SDLFormat != SDL_PIXELFORMAT_IYUV)
+    {
+        return;
+    }
+    if (element->texture == nullptr)
+    {
+        element->texture = SDL_CreateTexture(element->scene->window->renderer, element->SDLFormat, element->SDLAccess, element->realSize.w, element->realSize.h);
+        SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
+    }
+    SDL_UpdateYUVTexture(element->texture, NULL, static_cast<Uint8*>(YPixels), YPitch, static_cast<Uint8*>(UPixels), UPitch, static_cast<Uint8*>(VPixels), VPitch);
 }
 
 void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
