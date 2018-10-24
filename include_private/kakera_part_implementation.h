@@ -38,13 +38,14 @@ struct kakera_Element
     bool isResponseEvent = true;
     map<kakera_ElementEvents, kakera_ElementEventCallback> callbackList;
     Position_2D position;
-    Position_2D viewport;
+    Position_2D viewport = { 0, 0 };
     Size_2D displaySize;
     Size_2D realSize;
     double rotateAngle = 0.0;
     int SDLFormat;
     int SDLAccess;
     kakera_PositionReference reference;
+    RenderInfo renderInfo;
 };
 
 struct kakera_File

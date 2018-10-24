@@ -191,4 +191,11 @@ struct Size_2D
 
 using Position_2D = Point;
 
+struct RenderInfo
+{
+    SDL_Rect* positionAndSize;
+    SDL_Rect* cropArea = nullptr;
+    bool isRender = true;
+};
+
 #endif //!KAKERA_CORE_STRUCTS

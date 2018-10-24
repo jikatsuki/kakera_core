@@ -44,7 +44,6 @@ typedef enum {
 
 typedef enum {
     KAKERA_POSREFER_PARENT,
-    KAKERA_POSREFER_SCENE,
     KAKERA_POSREFER_WINDOW
 } kakera_PositionReference;
 

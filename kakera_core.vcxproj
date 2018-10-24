@@ -133,6 +133,7 @@
     <ClInclude Include="include_private\kakera_header.h" />
     <ClInclude Include="include_private\kakera_part_implementation.h" />
     <ClInclude Include="include_private\kakera_structs.hpp" />
+    <ClInclude Include="include_private\kakera_tools.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\kakera_element.cpp" />

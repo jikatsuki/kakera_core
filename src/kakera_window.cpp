@@ -3,7 +3,9 @@
 #include "kakera_part_implementation.h"
 #include "kakera_structs.hpp"
 #include "kakera_element.h"
+#include "kakera_tools.hpp"
 #include <forward_list>
+#include <iostream>
 
 using namespace std;
 
@@ -147,34 +149,84 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
         elementList.reverse();
         for (auto element : elementList)
         {            
-            if (element->texture != nullptr)
+            switch (element->reference)
             {
-                switch (element->reference)
+            case KAKERA_POSREFER_PARENT:
+            {
+                if (element->node == window->activeScene->elementList.GetRoot())
                 {
-                case KAKERA_POSREFER_PARENT:
+                    int window_w, window_h;
+                    kakera_GetWindowSize(window, &window_w, &window_h);
+                    kakera_SetElementPosition(element, 0, 0);
+                    kakera_SetElementDisplaySize(element, window_w, window_h);
+                    element->renderInfo.positionAndSize = new SDL_Rect({
+                        0,
+                        0,
+                        window_w,
+                        window_h
+                    });
+                }
+                else
                 {
-                    break;
+                    int viewportX1 = element->node->parent->data->viewport.x;
+                    int viewportX2 = element->node->parent->data->viewport.x + element->node->parent->data->displaySize.w;
+                    int viewportY1 = element->node->parent->data->viewport.y;
+                    int viewportY2 = element->node->parent->data->viewport.y + element->node->parent->data->displaySize.h;
+                    int thisX1 = element->position.x;
+                    int thisX2 = element->position.x + element->displaySize.w;
+                    int thisY1 = element->position.y;
+                    int thisY2 = element->position.y + element->displaySize.h;
+                    if (getAbsoluteValue<int>(thisX2+thisX1-viewportX2-viewportX1) <= (viewportX2-viewportX1+thisX2-thisX1) &&
+                        getAbsoluteValue<int>(thisY2+thisY1-viewportY2-viewportY1) <= (viewportY2-viewportY1+thisY2-thisY1))
+                    {
+                        int x1, x2, y1, y2;
+                        x1 = kakera_max<int>(viewportX1, thisX1);
+                        x2 = kakera_max<int>(viewportX2, thisX2);
+                        y1 = kakera_min<int>(viewportY1, thisY1);
+                        y2 = kakera_min<int>(viewportY2, thisY2);
+                        element->renderInfo.positionAndSize = new SDL_Rect({
+                            element->position.x + element->node->parent->data->position.x - element->node->parent->data->viewport.x,
+                            element->position.y + element->node->parent->data->position.y - element->node->parent->data->viewport.y,
+                            x2 - x1,
+                            y2 - y1
+                        });
+                    }
+                    else
+                    {
+                        element->renderInfo.isRender = false;
+                    }
                 }
-                case KAKERA_POSREFER_SCENE:
-                {
-                    break;
-                }
-                case KAKERA_POSREFER_WINDOW:
-                {
-                    SDL_RenderCopyEx(
-                        window->renderer,
-                        element->texture,
-                        NULL,
-                        new SDL_Rect({ element->position.x, element->position.y, element->displaySize.w, element->displaySize.h }),
-                        element->rotateAngle,
-                        NULL,
-                        SDL_FLIP_NONE
-                    );
-                    break;
-                }
-                default:
-                    break;
-                }
+                break;
+            }
+            case KAKERA_POSREFER_WINDOW:
+            {
+                element->renderInfo.positionAndSize = new SDL_Rect({
+                        element->position.x,
+                        element->position.y,
+                        element->displaySize.w,
+                        element->displaySize.h
+                    });
+                break;
+            }
+            default:
+                break;
+            }
+            if (element->renderInfo.isRender && element->texture != nullptr)
+            {
+                SDL_RenderCopyEx(
+                    window->renderer,
+                    element->texture,
+                    element->renderInfo.cropArea,
+                    element->renderInfo.positionAndSize,
+                    element->rotateAngle,
+                    NULL,
+                    SDL_FLIP_NONE
+                );
+            }
+            delete element->renderInfo.positionAndSize;
+            if (element->renderInfo.cropArea != nullptr)
+            {
+                delete element->renderInfo.cropArea;
             }
         }
     }
