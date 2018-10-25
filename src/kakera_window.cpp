@@ -179,17 +179,56 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                     if (getAbsoluteValue<int>(thisX2+thisX1-viewportX2-viewportX1) <= (viewportX2-viewportX1+thisX2-thisX1) &&
                         getAbsoluteValue<int>(thisY2+thisY1-viewportY2-viewportY1) <= (viewportY2-viewportY1+thisY2-thisY1))
                     {
-                        int x1, x2, y1, y2;
-                        x1 = kakera_max<int>(viewportX1, thisX1);
-                        x2 = kakera_max<int>(viewportX2, thisX2);
-                        y1 = kakera_min<int>(viewportY1, thisY1);
-                        y2 = kakera_min<int>(viewportY2, thisY2);
-                        element->renderInfo.positionAndSize = new SDL_Rect({
-                            element->position.x + element->node->parent->data->position.x - element->node->parent->data->viewport.x,
-                            element->position.y + element->node->parent->data->position.y - element->node->parent->data->viewport.y,
-                            x2 - x1,
-                            y2 - y1
-                        });
+                        element->renderInfo.positionAndSize = new SDL_Rect;
+                        element->renderInfo.cropArea = new SDL_Rect;
+                        if (thisX1 >= viewportX1)
+                        {
+                            element->renderInfo.positionAndSize->x = thisX1 - viewportX1 + element->node->parent->data->position.x;
+                            if (thisX2 > viewportX2)
+                            {
+                                element->renderInfo.positionAndSize->w = element->displaySize.w - thisX2 + viewportX2;
+                                element->renderInfo.cropArea->x = 0;
+                                element->renderInfo.cropArea->w = (element->renderInfo.positionAndSize->w / element->displaySize.w) * element->realSize.w;
+                            }
+                            else
+                            {
+                                element->renderInfo.positionAndSize->w = element->displaySize.w;
+                                element->renderInfo.cropArea->x = 0;
+                                element->renderInfo.cropArea->w = element->realSize.w;
+                            }
+                        }
+                        else
+                        {
+                            element->renderInfo.positionAndSize->x = element->node->parent->data->position.x + viewportX1;
+                            element->renderInfo.positionAndSize->w = thisX2 - viewportX1;
+                            element->renderInfo.cropArea->x = (element->realSize.w / element->displaySize.w) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
+                            element->renderInfo.cropArea->w = (element->renderInfo.positionAndSize->w / element->displaySize.w) * element->realSize.w;
+
+                        }
+
+                        if (thisY1 >= viewportY1)
+                        {
+                            element->renderInfo.positionAndSize->y = thisY1 - viewportY1 + element->node->parent->data->position.y;
+                            if (thisY2 > viewportY2)
+                            {
+                                element->renderInfo.positionAndSize->h = element->displaySize.h - thisY2 + viewportY2;
+                                element->renderInfo.cropArea->y = 0;
+                                element->renderInfo.cropArea->h = (element->renderInfo.positionAndSize->h / element->displaySize.h) * element->realSize.h;
+                            }
+                            else
+                            {
+                                element->renderInfo.positionAndSize->h = element->displaySize.h;
+                                element->renderInfo.cropArea->y = 0;
+                                element->renderInfo.cropArea->h = element->realSize.h;
+                            }
+                        }
+                        else
+                        {
+                            element->renderInfo.positionAndSize->y = element->node->parent->data->position.y + viewportY1;
+                            element->renderInfo.positionAndSize->h = thisY2 - viewportY1;
+                            element->renderInfo.cropArea->y = (element->realSize.h / element->displaySize.h) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
+                            element->renderInfo.cropArea->h = (element->renderInfo.positionAndSize->h / element->displaySize.h) * element->realSize.h;
+                        }
                     }
                     else
                     {
