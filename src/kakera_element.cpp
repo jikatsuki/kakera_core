@@ -15,6 +15,8 @@ kakera_Element * kakera_CreateElement()
     auto result = new kakera_Element;
     result->node = new Tree<kakera_Element*>::Node;
     result->node->data = result;
+    result->renderInfo.positionAndSize = new SDL_Rect;
+    result->renderInfo.cropArea = new SDL_Rect;
     return result;
 }
 
@@ -38,8 +40,9 @@ void kakera_InitailizeElementComplex(kakera_Element * element, kakera_PixelForma
 void kakera_DestroyElement(kakera_Element * element)
 {
     kakera_RunCallback(element, KAKERA_ELEMENT_ON_DESTROY);
-    element->scene->elementList.DeleteNode(element->node);
-    delete element;
+    delete element->renderInfo.positionAndSize;
+    delete element->renderInfo.cropArea;
+    kakera_DeleteElementFromScene(element->scene, element);
 }
 
 void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h)
@@ -76,6 +79,12 @@ void kakera_GetElementPosition(kakera_Element * element, int * x, int * y)
 {
     *x = element->position.x;
     *y = element->position.y;
+}
+
+void kakera_GetElementViewport(kakera_Element * element, int * x, int * y)
+{
+    *x = element->viewport.x;
+    *y = element->viewport.y;
 }
 
 void kakera_MoveElementViewport(kakera_Element* element, int x, int y)

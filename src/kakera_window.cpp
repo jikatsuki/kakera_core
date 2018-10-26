@@ -148,7 +148,8 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
         });
         elementList.reverse();
         for (auto element : elementList)
-        {            
+        {
+            kakera_RunCallback(element, KAKERA_ELEMENT_ON_FRAME_REFRESH);
             switch (element->reference)
             {
             case KAKERA_POSREFER_PARENT:
@@ -159,12 +160,10 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                     kakera_GetWindowSize(window, &window_w, &window_h);
                     kakera_SetElementPosition(element, 0, 0);
                     kakera_SetElementDisplaySize(element, window_w, window_h);
-                    element->renderInfo.positionAndSize = new SDL_Rect({
-                        0,
-                        0,
-                        window_w,
-                        window_h
-                    });
+                    element->renderInfo.positionAndSize->x = 0;
+                    element->renderInfo.positionAndSize->y = 0;
+                    element->renderInfo.positionAndSize->w = window_w;
+                    element->renderInfo.positionAndSize->h = window_h;
                 }
                 else
                 {
@@ -178,9 +177,7 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                     int thisY2 = element->position.y + element->displaySize.h;
                     if (getAbsoluteValue<int>(thisX2+thisX1-viewportX2-viewportX1) <= (viewportX2-viewportX1+thisX2-thisX1) &&
                         getAbsoluteValue<int>(thisY2+thisY1-viewportY2-viewportY1) <= (viewportY2-viewportY1+thisY2-thisY1))
-                    {
-                        element->renderInfo.positionAndSize = new SDL_Rect;
-                        element->renderInfo.cropArea = new SDL_Rect;
+                    {                     
                         if (thisX1 >= viewportX1)
                         {
                             element->renderInfo.positionAndSize->x = thisX1 - viewportX1 + element->node->parent->data->position.x;
@@ -188,7 +185,7 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                             {
                                 element->renderInfo.positionAndSize->w = element->displaySize.w - thisX2 + viewportX2;
                                 element->renderInfo.cropArea->x = 0;
-                                element->renderInfo.cropArea->w = (element->renderInfo.positionAndSize->w / element->displaySize.w) * element->realSize.w;
+                                element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
                             }
                             else
                             {
@@ -199,11 +196,10 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                         }
                         else
                         {
-                            element->renderInfo.positionAndSize->x = element->node->parent->data->position.x + viewportX1;
+                            element->renderInfo.positionAndSize->x = element->node->parent->data->position.x;
                             element->renderInfo.positionAndSize->w = thisX2 - viewportX1;
-                            element->renderInfo.cropArea->x = (element->realSize.w / element->displaySize.w) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
-                            element->renderInfo.cropArea->w = (element->renderInfo.positionAndSize->w / element->displaySize.w) * element->realSize.w;
-
+                            element->renderInfo.cropArea->x = (static_cast<float>(element->realSize.w) / static_cast<float>(element->displaySize.w)) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
+                            element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
                         }
 
                         if (thisY1 >= viewportY1)
@@ -213,7 +209,7 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                             {
                                 element->renderInfo.positionAndSize->h = element->displaySize.h - thisY2 + viewportY2;
                                 element->renderInfo.cropArea->y = 0;
-                                element->renderInfo.cropArea->h = (element->renderInfo.positionAndSize->h / element->displaySize.h) * element->realSize.h;
+                                element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
                             }
                             else
                             {
@@ -224,10 +220,10 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                         }
                         else
                         {
-                            element->renderInfo.positionAndSize->y = element->node->parent->data->position.y + viewportY1;
+                            element->renderInfo.positionAndSize->y = element->node->parent->data->position.y;
                             element->renderInfo.positionAndSize->h = thisY2 - viewportY1;
-                            element->renderInfo.cropArea->y = (element->realSize.h / element->displaySize.h) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
-                            element->renderInfo.cropArea->h = (element->renderInfo.positionAndSize->h / element->displaySize.h) * element->realSize.h;
+                            element->renderInfo.cropArea->y = (static_cast<float>(element->realSize.h) / static_cast<float>(element->displaySize.h)) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
+                            element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
                         }
                     }
                     else
@@ -239,12 +235,14 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
             }
             case KAKERA_POSREFER_WINDOW:
             {
-                element->renderInfo.positionAndSize = new SDL_Rect({
-                        element->position.x,
-                        element->position.y,
-                        element->displaySize.w,
-                        element->displaySize.h
-                    });
+                element->renderInfo.positionAndSize->x = element->position.x;
+                element->renderInfo.positionAndSize->y = element->position.y;
+                element->renderInfo.positionAndSize->w = element->displaySize.w;
+                element->renderInfo.positionAndSize->h = element->displaySize.h;
+                element->renderInfo.cropArea->x = 0;
+                element->renderInfo.cropArea->y = 0;
+                element->renderInfo.cropArea->w = element->realSize.w;
+                element->renderInfo.cropArea->h = element->realSize.h;
                 break;
             }
             default:
@@ -261,11 +259,6 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                     NULL,
                     SDL_FLIP_NONE
                 );
-            }
-            delete element->renderInfo.positionAndSize;
-            if (element->renderInfo.cropArea != nullptr)
-            {
-                delete element->renderInfo.cropArea;
             }
         }
     }

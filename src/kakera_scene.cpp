@@ -4,6 +4,7 @@
 #include "kakera_structs.hpp"
 #include "kakera_element.h"
 #include "kakera_part_implementation.h"
+#include <forward_list>
 #include <map>
 
 using namespace std;
@@ -22,7 +23,14 @@ void kakera_InitializeScene(kakera_Scene* scene)
 void kakera_DestroyScene(kakera_Scene * scene)
 {
     kakera_RunCallback(scene, KAKERA_SCENE_ON_DESTROY);
-    scene->elementList.Clear();
+    forward_list<kakera_Element*> elements;
+    scene->elementList.BreadthFirstSearch([&elements](Tree<kakera_Element*>::Node* node) {
+        elements.emplace_front(node->data);
+    });
+    for (auto element : elements)
+    {
+        kakera_DestroyElement(element);
+    }
     scene->callbackList.clear();
     delete scene;
 }

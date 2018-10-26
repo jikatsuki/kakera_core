@@ -50,6 +50,7 @@ typedef enum {
 typedef void(*kakera_ElementEventCallback)(kakera_Element*);
 
 extern KAKERA_EXPORT kakera_Element* kakera_CreateElement();
+extern KAKERA_EXPORT void kakera_DestroyElement(kakera_Element* element);
 extern KAKERA_EXPORT void kakera_InitailizeElementComplex(kakera_Element* element, kakera_PixelFormats format, kakera_PositionReference reference, const char* name);
 extern KAKERA_EXPORT void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h);
 extern KAKERA_EXPORT void kakera_GetElementDisplaySize(kakera_Element* element, int* w, int* h);
@@ -57,6 +58,7 @@ extern KAKERA_EXPORT void kakera_SetElementRealSize(kakera_Element* element, int
 extern KAKERA_EXPORT void kakera_GetElementRealSize(kakera_Element* element, int* w, int* h);
 extern KAKERA_EXPORT void kakera_SetElementPosition(kakera_Element* element, int x, int y);
 extern KAKERA_EXPORT void kakera_GetElementPosition(kakera_Element* element, int* x, int* y);
+extern KAKERA_EXPORT void kakera_GetElementViewport(kakera_Element* element, int* x, int* y);
 extern KAKERA_EXPORT void kakera_MoveElementViewport(kakera_Element* element, int x, int y);
 extern KAKERA_EXPORT const char* kakera_GetElementName(kakera_Element* element);
 extern KAKERA_EXPORT void kakera_SetIsElementResponseEvent(kakera_Element* element, bool response);
@@ -70,8 +72,6 @@ extern KAKERA_EXPORT void kakera_SetElementOpacity(kakera_Element* element, uint
 extern KAKERA_EXPORT void kakera_RotateElement(kakera_Element* element, double angle);
 
 #define kakera_InitailizeElement(element,name) kakera_InitailizeElementComplex(element, KAKERA_ELEMENT_TYPE_STATIC, KAKERA_POSREFER_PARENT, name);
-
-KAKERA_DEPRECATED extern KAKERA_EXPORT void kakera_DestroyElement(kakera_Element* element);
 
 #ifdef __cplusplus
 }

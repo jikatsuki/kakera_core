@@ -88,17 +88,6 @@ public:
         });
         for (Node* node : tempList)
         {
-            if (is_pointer<T>::value)
-            {
-                if (useCFree)
-                {
-                    free(node->data);
-                }
-                else
-                {
-                    delete node->data;
-                }
-            }
             delete node;
         }
     }
@@ -148,17 +137,6 @@ public:
             }
             node->parent->children.insert(node->parent->children.end(), node->children.begin(), node->children.end());
             node->children.clear();
-            if (is_pointer<T>::value)
-            {
-                if (useCFree)
-                {
-                    free(node->data);
-                }
-                else
-                {
-                    delete node->data;
-                }
-            }
             delete node;
             return 0;
         }
@@ -193,7 +171,7 @@ using Position_2D = Point;
 
 struct RenderInfo
 {
-    SDL_Rect* positionAndSize;
+    SDL_Rect* positionAndSize = nullptr;
     SDL_Rect* cropArea = nullptr;
     bool isRender = true;
 };
