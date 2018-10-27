@@ -141,19 +141,18 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                 {
                     if (!element->isMouseEntered)
                     {
+                        if (window->mouseEnteredElement != nullptr)
+                        {
+                            window->mouseEnteredElement->isMouseEntered = false;
+                            kakera_RunCallback(window->mouseEnteredElement, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
+                        }
                         element->isMouseEntered = true;
-                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_ENTER);
+                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_ENTER);                        
+                        window->mouseEnteredElement = element;
                     }
                     kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_MOVE);
-                }
-                else
-                {
-                    if (element->isMouseEntered)
-                    {
-                        element->isMouseEntered = false;
-                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
-                    }
-                }
+                    break;
+                }               
             }
         }
         break;
@@ -305,9 +304,9 @@ void kakera_StartWindow(kakera_Window * window)
     SDL_SetEventFilter(kakera_private_EventFilter, window);
     while (!window->isQuit)
     {
-        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / window->FPS, kakera_private_FPSSemCallback, window);
+        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / window->FPS, kakera_private_FPSSemCallback, window);        
         kakera_pirvate_RefreshFrame(window);
-        SDL_PollEvent(&event);
+        SDL_PollEvent(&event);        
         SDL_SemWait(window->FPSSem);
         SDL_RemoveTimer(FPSTimer);
     }

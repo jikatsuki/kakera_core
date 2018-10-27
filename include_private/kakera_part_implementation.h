@@ -20,6 +20,7 @@ struct kakera_Window
     map<const char*, kakera_Scene*> sceneList;
     kakera_Scene* activeScene = nullptr;
     kakera_WindowFPS FPS = KAKERA_WINDOW_30FPS;
+    kakera_Element* mouseEnteredElement = nullptr;
 };
 
 struct kakera_Scene
