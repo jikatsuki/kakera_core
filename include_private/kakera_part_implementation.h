@@ -46,6 +46,7 @@ struct kakera_Element
     int SDLAccess;
     kakera_PositionReference reference;
     RenderInfo renderInfo;
+    bool isMouseEntered = false;
 };
 
 struct kakera_File

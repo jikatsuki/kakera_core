@@ -2,6 +2,7 @@
 #include "kakera_header.h"
 #include "kakera_part_implementation.h"
 #include "kakera_structs.hpp"
+#include "kakera_scene.h"
 #include "kakera_element.h"
 #include "kakera_tools.hpp"
 #include <forward_list>
@@ -124,6 +125,39 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     case SDL_QUIT:
         window->isQuit = true;
         break;
+    case SDL_MOUSEMOTION:
+    {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        forward_list<kakera_Element*> elementList;
+        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+            elementList.emplace_front(node->data);
+        });
+        for (auto element : elementList)
+        {
+            if (element->isResponseEvent)
+            {
+                if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize))
+                {
+                    if (!element->isMouseEntered)
+                    {
+                        element->isMouseEntered = true;
+                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_ENTER);
+                    }
+                    kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_MOVE);
+                }
+                else
+                {
+                    if (element->isMouseEntered)
+                    {
+                        element->isMouseEntered = false;
+                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
+                    }
+                }
+            }
+        }
+        break;
+    } 
     default:
         break;
     }
@@ -276,7 +310,6 @@ void kakera_StartWindow(kakera_Window * window)
         SDL_PollEvent(&event);
         SDL_SemWait(window->FPSSem);
         SDL_RemoveTimer(FPSTimer);
-        kakera_pirvate_RefreshFrame(window);
     }
     if (window->isQuit)
     {

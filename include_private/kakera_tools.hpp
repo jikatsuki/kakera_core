@@ -40,4 +40,16 @@ T kakera_min(T a, T b)
     }
 }
 
+bool isPointInArea(int& x, int& y, SDL_Rect* area)
+{
+    if (x >= area->x && x <= (area->x + area->h) && y >= area->y && y <= (area->y + area->h))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 #endif // !KAKERA_CORE_TOOLS
