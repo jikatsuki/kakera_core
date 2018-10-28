@@ -42,12 +42,16 @@ typedef enum {
     KAKERA_MOUSE_LEFT_BUTTON,
     KAKERA_MOUSE_RIGHT_BUTTON,
     KAKERA_MOUSE_MIDDLE_BUTTON
-} kakera_Mouse_Button;
+} kakera_MouseButton;
 
 typedef enum {
     KAKERA_MOUSE_BUTTON_PRESSED,
     KAKERA_MOUSE_BUTTON_RELEASED
-} kakera_Mouse_Button_Status;
+} kakera_MouseButtonStatus;
+
+typedef struct {
+    int x, y;
+} kakera_Point;
 
 typedef enum {
     KAKERA_KEY_ESC = 41,
@@ -136,16 +140,17 @@ typedef enum {
     KAKERA_KEY_BACKSPACE = 42,
     KAKERA_KEY_APPLICATION = 101,
     KAKERA_KEY_WIN = 101
-} kakera_Keyboard_Key;
+} kakera_KeyboardKey;
 
 typedef struct {
-    kakera_Mouse_Button button;
-    kakera_Mouse_Button_Status status;
-    int x, y;
+    kakera_MouseButton button;
+    kakera_MouseButtonStatus status;
+    kakera_Point pointer;
+    kakera_Point wheel;
 } kakera_Mouse_Event;
 
 typedef struct {
-    kakera_Keyboard_Key key;
+    kakera_KeyboardKey key;
 } kakera_Keyboard_Event;
 
 typedef struct {

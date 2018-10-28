@@ -51,6 +51,7 @@ struct kakera_Element
     kakera_PositionReference reference;
     RenderInfo renderInfo;
     bool isMouseEntered = false;
+    map<const char*, void*> dataList;
 };
 
 struct kakera_File

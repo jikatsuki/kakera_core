@@ -40,6 +40,8 @@ void kakera_InitailizeElementComplex(kakera_Element * element, kakera_PixelForma
 void kakera_DestroyElement(kakera_Element * element)
 {
     kakera_RunCallback(element, KAKERA_ELEMENT_ON_DESTROY);
+    element->callbackList.clear();
+    element->dataList.clear();
     delete element->renderInfo.positionAndSize;
     delete element->renderInfo.cropArea;
     kakera_DeleteElementFromScene(element->scene, element);
@@ -202,5 +204,23 @@ void kakera_RotateElement(kakera_Element * element, double angle)
         {
             node->data->rotateAngle = angle;
         }
+    }
+}
+
+void kakera_SaveDataToElement(kakera_Element * element, const char * name, void * data)
+{
+    element->dataList.emplace(name, data);
+}
+
+void * kakera_ReadDataFromElement(kakera_Element * element, const char * name)
+{
+    auto iter = element->dataList.find(name);
+    if (iter == element->dataList.end())
+    {
+        return nullptr;
+    }
+    else
+    {
+        return iter->second;
     }
 }

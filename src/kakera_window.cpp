@@ -5,6 +5,7 @@
 #include "kakera_scene.h"
 #include "kakera_element.h"
 #include "kakera_tools.hpp"
+#include "kakera_file.h"
 #include <forward_list>
 #include <iostream>
 
@@ -139,8 +140,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
-        window->event.mouse.x = mouseX;
-        window->event.mouse.y = mouseY;
+        window->event.mouse.pointer.x = mouseX;
+        window->event.mouse.pointer.y = mouseY;
         forward_list<kakera_Element*> elementList;
         window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
             elementList.emplace_front(node->data);
@@ -173,8 +174,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
-        window->event.mouse.x = mouseX;
-        window->event.mouse.y = mouseY;
+        window->event.mouse.pointer.x = mouseX;
+        window->event.mouse.pointer.y = mouseY;
         switch (event->button.button)
         {
         case SDL_BUTTON_LEFT:
@@ -215,8 +216,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
-        window->event.mouse.x = mouseX;
-        window->event.mouse.y = mouseY;
+        window->event.mouse.pointer.x = mouseX;
+        window->event.mouse.pointer.y = mouseY;
         switch (event->button.button)
         {
         case SDL_BUTTON_LEFT:
@@ -262,12 +263,31 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
         }
         break;
     }
+    case SDL_MOUSEWHEEL:
+    {
+        if (window->activeScene->focusElement != nullptr && window->activeScene->focusElement->isResponseEvent)
+        {
+            window->event.mouse.wheel.x = event->wheel.x;
+            window->event.mouse.wheel.y = event->wheel.y;
+            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL);
+        }
+        break;
+    }
     case SDL_KEYDOWN:
     {
         if (window->activeScene->focusElement != nullptr && window->activeScene->focusElement->isResponseEvent)
         {
-            window->event.keyboard.key = static_cast<kakera_Keyboard_Key>(event->key.keysym.scancode);
+            window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
             kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_DOWN);
+        }
+        break;
+    }
+    case SDL_KEYUP:
+    {
+        if (window->activeScene->focusElement != nullptr && window->activeScene->focusElement->isResponseEvent)
+        {
+            window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
+            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_UP);
         }
         break;
     }

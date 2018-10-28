@@ -22,3 +22,52 @@ kakera_File * kakera_ReadFile(const char * filepath)
     result->size = size;
     return result;
 }
+
+kakera_File * kakera_CreateNewFile(int size, char * data)
+{
+    kakera_File* result = new kakera_File;
+    result->data = data;
+    result->size = size;
+    return result;
+}
+
+void kakera_DestroyFile(kakera_File * file)
+{
+    delete file->data;
+    delete file;
+}
+
+kakera_FilePackage * kakera_CreateNewFilePackage()
+{
+    return nullptr;
+}
+
+kakera_FilePackage * kakera_LoadFilePackage(kakera_File * packageFile)
+{
+    return nullptr;
+}
+
+void kakera_DestroyFilePackage(kakera_FilePackage * package)
+{
+    
+}
+
+kakera_File * kakera_ReadFileFromPackage(kakera_FilePackage * package, const char * path)
+{
+    return nullptr;
+}
+
+void kakera_AddFileToPackage(kakera_FilePackage * package, kakera_File * file, const char * path)
+{
+    
+}
+
+void kakera_SetPackageEncryptMethod(kakera_FilePackage * package, kakera_CryptMethod method)
+{
+    
+}
+
+void kakera_SetPackageDecryptMethod(kakera_FilePackage * package, kakera_CryptMethod method)
+{
+    
+}

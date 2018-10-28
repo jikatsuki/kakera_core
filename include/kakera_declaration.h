@@ -10,6 +10,7 @@ typedef struct kakera_Window;
 typedef struct kakera_Scene;
 typedef struct kakera_Element;
 typedef struct kakera_File;
+typedef struct kakera_FilePackage;
 
 #ifdef __cplusplus
 }

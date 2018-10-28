@@ -1,54 +1,25 @@
 #ifndef KAKERA_CORE_TOOLS
 #define KAKERA_CORE_TOOLS
 
+#include "kakera_header.h"
+
 template<typename T>
-T getAbsoluteValue(T num)
+inline T getAbsoluteValue(T num) noexcept
 {
     if (num >= 0)
-    {
         return num;
-    }
     else
-    {
         return -num;
-    }
 }
 
-template<typename T>
-T kakera_max(T a, T b)
+inline bool isPointInArea(int& x, int& y, SDL_Rect* area) noexcept
 {
-    if (a >= b)
+    if (area != nullptr)
     {
-        return a;
-    }
-    else
-    {
-        return b;
-    }
-}
-
-template<typename T>
-T kakera_min(T a, T b)
-{
-    if (a <= b)
-    {
-        return a;
-    }
-    else
-    {
-        return b;
-    }
-}
-
-bool isPointInArea(int& x, int& y, SDL_Rect* area)
-{
-    if (x >= area->x && x <= (area->x + area->w) && y >= area->y && y <= (area->y + area->h))
-    {
-        return true;
-    }
-    else
-    {
-        return false;
+        if (x >= area->x && x <= (area->x + area->w) && y >= area->y && y <= (area->y + area->h))
+            return true;
+        else
+            return false;
     }
 }
 
