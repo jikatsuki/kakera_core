@@ -262,6 +262,15 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
         }
         break;
     }
+    case SDL_KEYDOWN:
+    {
+        if (window->activeScene->focusElement != nullptr && window->activeScene->focusElement->isResponseEvent)
+        {
+            window->event.keyboard.key = static_cast<kakera_Keyboard_Key>(event->key.keysym.scancode);
+            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_DOWN);
+        }
+        break;
+    }
     default:
         break;
     }
