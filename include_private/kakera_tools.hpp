@@ -21,6 +21,8 @@ inline bool isPointInArea(int& x, int& y, SDL_Rect* area) noexcept
         else
             return false;
     }
+    else
+        return false;
 }
 
 #endif // !KAKERA_CORE_TOOLS

@@ -15,7 +15,7 @@ extern KAKERA_EXPORT kakera_File* kakera_ReadFile(const char* filepath);
 extern KAKERA_EXPORT kakera_File* kakera_CreateNewFile(int size, char* data);
 extern KAKERA_EXPORT void kakera_DestroyFile(kakera_File* file);
 extern KAKERA_EXPORT kakera_FilePackage* kakera_CreateNewFilePackage();
-extern KAKERA_EXPORT kakera_FilePackage* kakera_LoadFilePackage(kakera_File* packageFile);
+extern KAKERA_EXPORT kakera_FilePackage* kakera_LoadFilePackage(const char* path);
 extern KAKERA_EXPORT void kakera_DestroyFilePackage(kakera_FilePackage* package);
 extern KAKERA_EXPORT kakera_File* kakera_ReadFileFromPackage(kakera_FilePackage* package, const char* path);
 extern KAKERA_EXPORT void kakera_AddFileToPackage(kakera_FilePackage* package, kakera_File* file, const char* path);

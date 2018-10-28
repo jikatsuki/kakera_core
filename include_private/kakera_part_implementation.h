@@ -9,6 +9,8 @@
 #include "kakera_element.h"
 #include "kakera_event.h"
 #include <map>
+#include <cstdlib>
+#include "pugixml/pugixml.hpp"
 
 using namespace std;
 
@@ -58,6 +60,12 @@ struct kakera_File
 {
     int size;
     char* data;
+};
+
+struct kakera_FilePackage
+{
+    FILE* data;
+    pugi::xml_document index;
 };
 
 #endif //!KAKERA_CORE_PART_IMPLEMENTATION
