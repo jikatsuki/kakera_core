@@ -12,6 +12,7 @@ extern "C"
 #include "kakera_scene.h"
 #include "kakera_element.h"
 #include "kakera_file.h"
+#include "kakera_event.h"
 
 #ifdef __cplusplus
 }

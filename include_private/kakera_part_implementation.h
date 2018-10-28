@@ -7,6 +7,7 @@
 #include "kakera_window.h"
 #include "kakera_scene.h"
 #include "kakera_element.h"
+#include "kakera_event.h"
 #include <map>
 
 using namespace std;
@@ -20,19 +21,21 @@ struct kakera_Window
     map<const char*, kakera_Scene*> sceneList;
     kakera_Scene* activeScene = nullptr;
     kakera_WindowFPS FPS = KAKERA_WINDOW_30FPS;
-    kakera_Element* mouseEnteredElement = nullptr;
+    kakera_Event event;
 };
 
 struct kakera_Scene
 {
-    kakera_Window* window;
+    kakera_Window* window = nullptr;
     Tree<kakera_Element*> elementList;
     map<kakera_SceneEvents, kakera_SceneEventCallback> callbackList;
+    kakera_Element* mouseEnteredElement = nullptr;
+    kakera_Element* focusElement = nullptr;
 };
 
 struct kakera_Element
 {
-    kakera_Scene* scene;
+    kakera_Scene* scene = nullptr;
     const char* name;
     SDL_Texture* texture = nullptr;
     Tree<kakera_Element*>::Node* node;

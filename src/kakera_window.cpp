@@ -112,9 +112,19 @@ void kakera_SetWindowIcon(kakera_Window * window, kakera_File* icon)
     SDL_FreeSurface(iconSurface);
 }
 
+kakera_WindowFPS kakera_GetWindowFPS(kakera_Window * window)
+{
+    return window->FPS;
+}
+
 void kakera_SetWindowFPS(kakera_Window * window, kakera_WindowFPS FPS)
 {
     window->FPS = FPS;
+}
+
+kakera_Event * kakera_GetWindowEvent(kakera_Window * window)
+{
+    return &window->event;
 }
 
 int kakera_private_EventFilter(void * userdata, SDL_Event * event)
@@ -129,6 +139,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
+        window->event.mouse.x = mouseX;
+        window->event.mouse.y = mouseY;
         forward_list<kakera_Element*> elementList;
         window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
             elementList.emplace_front(node->data);
@@ -141,14 +153,14 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                 {
                     if (!element->isMouseEntered)
                     {
-                        if (window->mouseEnteredElement != nullptr)
+                        if (window->activeScene->mouseEnteredElement != nullptr)
                         {
-                            window->mouseEnteredElement->isMouseEntered = false;
-                            kakera_RunCallback(window->mouseEnteredElement, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
+                            window->activeScene->mouseEnteredElement->isMouseEntered = false;
+                            kakera_RunCallback(window->activeScene->mouseEnteredElement, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
                         }
                         element->isMouseEntered = true;
                         kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_ENTER);                        
-                        window->mouseEnteredElement = element;
+                        window->activeScene->mouseEnteredElement = element;
                     }
                     kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_MOVE);
                     break;
@@ -156,7 +168,100 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             }
         }
         break;
-    } 
+    }
+    case SDL_MOUSEBUTTONDOWN:
+    {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        window->event.mouse.x = mouseX;
+        window->event.mouse.y = mouseY;
+        switch (event->button.button)
+        {
+        case SDL_BUTTON_LEFT:
+            window->event.mouse.button = KAKERA_MOUSE_LEFT_BUTTON;
+            break;
+        case SDL_BUTTON_MIDDLE:
+            window->event.mouse.button = KAKERA_MOUSE_MIDDLE_BUTTON;
+            break;
+        case SDL_BUTTON_RIGHT:
+            window->event.mouse.button = KAKERA_MOUSE_RIGHT_BUTTON;
+            break;
+        default:
+            break;
+        }
+        forward_list<kakera_Element*> elementList;
+        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+            elementList.emplace_front(node->data);
+        });
+        for (auto element : elementList)
+        {
+            if (element->isResponseEvent)
+            {
+                if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
+                        (event->button.button == SDL_BUTTON_LEFT  ||
+                         event->button.button == SDL_BUTTON_RIGHT ||
+                         event->button.button == SDL_BUTTON_MIDDLE
+                        ) &&
+                    event->button.state == SDL_PRESSED)
+                {
+                    kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_DOWN);
+                    break;
+                }
+            }
+        }
+        break;
+    }
+    case SDL_MOUSEBUTTONUP:
+    {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        window->event.mouse.x = mouseX;
+        window->event.mouse.y = mouseY;
+        switch (event->button.button)
+        {
+        case SDL_BUTTON_LEFT:
+            window->event.mouse.button = KAKERA_MOUSE_LEFT_BUTTON;
+            break;
+        case SDL_BUTTON_MIDDLE:
+            window->event.mouse.button = KAKERA_MOUSE_MIDDLE_BUTTON;
+            break;
+        case SDL_BUTTON_RIGHT:
+            window->event.mouse.button = KAKERA_MOUSE_RIGHT_BUTTON;
+            break;
+        default:
+            break;
+        }
+        forward_list<kakera_Element*> elementList;
+        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+            elementList.emplace_front(node->data);
+        });
+        for (auto element : elementList)
+        {
+            if (element->isResponseEvent)
+            {
+                if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
+                        (event->button.button == SDL_BUTTON_LEFT  ||
+                         event->button.button == SDL_BUTTON_RIGHT ||
+                         event->button.button == SDL_BUTTON_MIDDLE
+                        ) &&
+                    event->button.state == SDL_RELEASED)
+                {
+                    if (event->button.clicks == 2)
+                    {
+                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_DOUBLE_CLICK);
+                    }
+                    else if (event->button.clicks == 1)
+                    {
+                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
+                    }
+                    kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_UP);
+                    kakera_SetFocusElement(window->activeScene, element);
+                    break;
+                }
+            }
+        }
+        break;
+    }
     default:
         break;
     }
@@ -271,7 +376,7 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
                 element->renderInfo.positionAndSize->x = element->position.x;
                 element->renderInfo.positionAndSize->y = element->position.y;
                 element->renderInfo.positionAndSize->w = element->displaySize.w;
-                element->renderInfo.positionAndSize->h = element->displaySize.h;
+                element->renderInfo.positionAndSize->h = element->displaySize.h;                
                 element->renderInfo.cropArea->x = 0;
                 element->renderInfo.cropArea->y = 0;
                 element->renderInfo.cropArea->w = element->realSize.w;

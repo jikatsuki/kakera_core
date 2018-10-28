@@ -126,6 +126,7 @@
     <ClInclude Include="include\kakera_apis.h" />
     <ClInclude Include="include\kakera_declaration.h" />
     <ClInclude Include="include\kakera_element.h" />
+    <ClInclude Include="include\kakera_event.h" />
     <ClInclude Include="include\kakera_file.h" />
     <ClInclude Include="include\kakera_main.h" />
     <ClInclude Include="include\kakera_scene.h" />

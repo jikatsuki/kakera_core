@@ -1,0 +1,159 @@
+#ifndef KAKERA_CORE_EVENT
+#define KAKERA_CORE_EVENT
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include "kakera_main.h"
+#include "kakera_declaration.h"
+
+typedef enum {
+    KAKERA_SCENE_ON_CREATE,
+    KAKERA_SCENE_ON_DESTROY,
+    KAKERA_SCENE_ON_START,
+    KAKERA_SCENE_ON_STOP
+} kakera_SceneEvents;
+
+typedef void(*kakera_SceneEventCallback)(kakera_Scene*);
+
+typedef enum {
+    KAKERA_ELEMENT_ON_BLUR,
+    KAKERA_ELEMENT_ON_CREATE,
+    KAKERA_ELEMENT_ON_CLICK,
+    KAKERA_ELEMENT_ON_DESTROY,
+    KAKERA_ELEMENT_ON_DOUBLE_CLICK,
+    KAKERA_ELEMENT_ON_FOCUS,
+    KAKERA_ELEMENT_ON_KEY_DOWN,
+    KAKERA_ELEMENT_ON_KEY_UP,
+    KAKERA_ELEMENT_ON_MOUSE_DOWN,
+    KAKERA_ELEMENT_ON_MOUSE_ENTER,
+    KAKERA_ELEMENT_ON_MOUSE_LEAVE,
+    KAKERA_ELEMENT_ON_MOUSE_MOVE,
+    KAKERA_ELEMENT_ON_MOUSE_UP,
+    KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL,
+    KAKERA_ELEMENT_ON_FRAME_REFRESH
+} kakera_ElementEvents;
+
+typedef void(*kakera_ElementEventCallback)(kakera_Element*);
+
+typedef enum {
+    KAKERA_MOUSE_LEFT_BUTTON,
+    KAKERA_MOUSE_RIGHT_BUTTON,
+    KAKERA_MOUSE_MIDDLE_BUTTON
+} kakera_Mouse_Button;
+
+typedef enum {
+    KAKERA_KEY_ESC,
+    KAKERA_KEY_F1,
+    KAKERA_KEY_F2,
+    KAKERA_KEY_F3,
+    KAKERA_KEY_F4,
+    KAKERA_KEY_F5,
+    KAKERA_KEY_F6,
+    KAKERA_KEY_F7,
+    KAKERA_KEY_F8,
+    KAKERA_KEY_F9,
+    KAKERA_KEY_F10,
+    KAKERA_KEY_F11,
+    KAKERA_KEY_F12,
+    KAKERA_KEY_PRINT_SCREEN,
+    KAKERA_KEY_SCROLL_LOCK,
+    KAKERA_KEY_PAUSE,
+    KAKERA_KEY_INSERT,
+    KAKERA_KEY_HOME,
+    KAKERA_KEY_PAGE_UP,
+    KAKERA_KEY_PAGE_DOWN,
+    KAKERA_KEY_DELETE,
+    KAKERA_KEY_END,
+    KAKERA_KEY_TAB,
+    KAKERA_KEY_CAPS_LOCK,
+    KAKERA_KEY_ENTER,
+    KAKERA_KEY_LEFT_ALT,
+    KAKERA_KEY_RIGHT_ALT,
+    KAKERA_KEY_LEFT_SHIFT,
+    KAKERA_KEY_RIGHT_SHIFT,
+    KAKERA_KEY_LEFT_CTRL,
+    KAKERA_KEY_RIGHT_CTRL,
+    KAKERA_KEY_ARROW_UP,
+    KAKERA_KEY_ARROW_DOWN,
+    KAKERA_KEY_ARROW_LEFT,
+    KAKERA_KEY_ARROW_RIGHT,
+    KAKERA_KEY_0,
+    KAKERA_KEY_1,
+    KAKERA_KEY_2,
+    KAKERA_KEY_3,
+    KAKERA_KEY_4,
+    KAKERA_KEY_5,
+    KAKERA_KEY_6,
+    KAKERA_KEY_7,
+    KAKERA_KEY_8,
+    KAKERA_KEY_9,
+    KAKERA_KEY_A,
+    KAKERA_KEY_B,
+    KAKERA_KEY_C,
+    KAKERA_KEY_D,
+    KAKERA_KEY_E,
+    KAKERA_KEY_F,
+    KAKERA_KEY_G,
+    KAKERA_KEY_H,
+    KAKERA_KEY_I,
+    KAKERA_KEY_J,
+    KAKERA_KEY_K,
+    KAKERA_KEY_L,
+    KAKERA_KEY_M,
+    KAKERA_KEY_N,
+    KAKERA_KEY_O,
+    KAKERA_KEY_P,
+    KAKERA_KEY_Q,
+    KAKERA_KEY_R,
+    KAKERA_KEY_S,
+    KAKERA_KEY_T,
+    KAKERA_KEY_U,
+    KAKERA_KEY_V,
+    KAKERA_KEY_W,
+    KAKERA_KEY_X,
+    KAKERA_KEY_Y,
+    KAKERA_KEY_Z,
+    KAKERA_KEY_MINUS,
+    KAKERA_KEY_EQUALS,
+    KAKERA_KEY_LEFT_BRACKET,
+    KAKERA_KEY_RIGHT_BRACKET,
+    KAKERA_KEY_BACK_SLASH,
+    KAKERA_KEY_SEMICOLON,
+    KAKERA_KEY_QUOTE,
+    KAKERA_KEY_COMMA,
+    KAKERA_KEY_PERIOD,
+    KAKERA_KEY_SLASH,
+    KAKERA_KEY_BACK_QUOTE,
+    KAKERA_KEY_SPACE,
+    KAKERA_KEY_BACKSPACE,
+    KAKERA_KEY_APPLICATION,
+    KAKERA_KEY_WIN = 84
+} kakera_Keyboard_Key;
+
+typedef struct {
+    kakera_Mouse_Button button;
+    int x, y;
+} kakera_Mouse_Event;
+
+typedef struct {
+    kakera_Keyboard_Key key;
+} kakera_Keyboard_Event;
+
+typedef struct {
+} kakera_Wheel_Event;
+
+typedef union {
+    //この歌声がUNION!!!
+    kakera_Mouse_Event mouse;
+    kakera_Keyboard_Event key;
+    kakera_Wheel_Event wheel;
+} kakera_Event;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // !KAKERA_CORE_EVENT

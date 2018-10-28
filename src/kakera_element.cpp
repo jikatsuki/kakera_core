@@ -108,6 +108,11 @@ void kakera_BindEventToElement(kakera_Element * element, kakera_ElementEvents ev
     element->callbackList.emplace(event, callback);
 }
 
+kakera_Scene * kakera_GetSceneFromElement(kakera_Element * element)
+{
+    return element->scene;
+}
+
 char * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
 {
     SDL_Surface* RAWSurface = SDL_CreateRGBSurface(0, w, h, 32, 0, 0, 0, 0);

@@ -12,6 +12,7 @@ extern "C"
 #include "kakera_scene.h"
 #include "kakera_declaration.h"
 #include "kakera_file.h"
+#include "kakera_event.h"
 
 typedef enum {
     KAKERA_WINDOW_FULLSCREEN            = 1,
@@ -45,7 +46,9 @@ extern KAKERA_EXPORT void               kakera_MaximizeWindow(kakera_Window* win
 extern KAKERA_EXPORT void               kakera_RaiseWindow(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_SetWindowResizeable(kakera_Window* window, bool resizeable);
 extern KAKERA_EXPORT void               kakera_SetWindowIcon(kakera_Window* window, kakera_File* icon);
+extern KAKERA_EXPORT kakera_WindowFPS   kakera_GetWindowFPS(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_SetWindowFPS(kakera_Window* window, kakera_WindowFPS FPS);
+extern KAKERA_EXPORT kakera_Event*      kakera_GetWindowEvent(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_StartWindow(kakera_Window* window);
 
 #ifdef __cplusplus

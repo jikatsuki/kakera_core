@@ -88,6 +88,24 @@ void kakera_BindEventToScene(kakera_Scene * scene, kakera_SceneEvents event, kak
     scene->callbackList.emplace(event, callback);
 }
 
+void kakera_SetFocusElement(kakera_Scene * scene, kakera_Element * element)
+{    
+    if (scene->focusElement != element)
+    {
+        if (scene->focusElement != nullptr)
+        {
+            kakera_RunCallback(scene->focusElement, KAKERA_ELEMENT_ON_BLUR);
+        }
+        scene->focusElement = element;
+        kakera_RunCallback(scene->focusElement, KAKERA_ELEMENT_ON_FOCUS);
+    }
+}
+
+kakera_Window * kakera_GetWindowFromScene(kakera_Scene * scene)
+{
+    return scene->window;
+}
+
 void kakera_StartScene(kakera_Window * window, kakera_Scene * scene)
 {
     if (window->activeScene != nullptr)
