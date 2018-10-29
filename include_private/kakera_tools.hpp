@@ -2,6 +2,11 @@
 #define KAKERA_CORE_TOOLS
 
 #include "kakera_header.h"
+#include <string>
+#include <vector>
+#include <sstream>
+
+using namespace std;
 
 template<typename T>
 inline T getAbsoluteValue(T num) noexcept
@@ -12,7 +17,7 @@ inline T getAbsoluteValue(T num) noexcept
         return -num;
 }
 
-inline bool isPointInArea(int& x, int& y, SDL_Rect* area) noexcept
+inline bool isPointInArea(int& x, int& y, const SDL_Rect* area) noexcept
 {
     if (area != nullptr)
     {
@@ -23,6 +28,18 @@ inline bool isPointInArea(int& x, int& y, SDL_Rect* area) noexcept
     }
     else
         return false;
+}
+
+static vector<string> splitString(const string& str, const char separator)
+{
+    vector<string> result;
+    stringstream strstream(str);
+    string temp;
+    while (getline(strstream, temp, separator))
+    {
+        result.emplace_back(temp);
+    }
+    return result;
 }
 
 #endif // !KAKERA_CORE_TOOLS

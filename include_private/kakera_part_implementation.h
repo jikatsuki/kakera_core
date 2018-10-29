@@ -8,6 +8,7 @@
 #include "kakera_scene.h"
 #include "kakera_element.h"
 #include "kakera_event.h"
+#include "kakera_file.h"
 #include <map>
 #include <cstdlib>
 #include "pugixml/pugixml.hpp"
@@ -66,6 +67,9 @@ struct kakera_FilePackage
 {
     FILE* data;
     pugi::xml_document index;
+    const char* path;
+    kakera_CryptMethod encrypt = nullptr;
+    kakera_CryptMethod decrypt = nullptr;
 };
 
 #endif //!KAKERA_CORE_PART_IMPLEMENTATION

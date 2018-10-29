@@ -4,8 +4,8 @@
 #include "kakera_structs.hpp"
 #include "kakera_scene.h"
 #include "kakera_element.h"
-#include "kakera_tools.hpp"
 #include "kakera_file.h"
+#include "kakera_tools.hpp"
 #include <forward_list>
 #include <iostream>
 
