@@ -13,7 +13,7 @@ typedef kakera_File*(*kakera_CryptMethod)(kakera_File*);
 
 extern KAKERA_EXPORT kakera_File*           kakera_ReadFile(const char* filepath);
 extern KAKERA_EXPORT kakera_File*           kakera_CreateNewFile(int size, char* data);
-extern KAKERA_EXPORT char*                  kakera_GetRawFileData(kakera_File* file);
+extern KAKERA_EXPORT const char* const      kakera_GetRawFileData(kakera_File* file);
 extern KAKERA_EXPORT int                    kakera_GetRawFileSize(kakera_File* file);
 extern KAKERA_EXPORT void                   kakera_DestroyFile(kakera_File* file);
 extern KAKERA_EXPORT kakera_FilePackage*    kakera_CreateNewFilePackage(const char* path);

@@ -33,7 +33,7 @@ kakera_File * kakera_CreateNewFile(int size, char * data)
     return result;
 }
 
-char * kakera_GetRawFileData(kakera_File * file)
+const char * const kakera_GetRawFileData(kakera_File * file)
 {
     return file->data;
 }
@@ -59,6 +59,13 @@ public:
     }
 };
 
+char* kakera_CreateEmptyString(int size)
+{
+    char* result = new char[size];
+    memset(result, 0, size);
+    return result;
+}
+
 kakera_FilePackage * kakera_CreateNewFilePackage(const char* path)
 {
     kakera_FilePackage* package = new kakera_FilePackage;
@@ -70,7 +77,10 @@ kakera_FilePackage * kakera_CreateNewFilePackage(const char* path)
     package->data = fopen(path, "wb+");
     kakera_XMLSaveAsString writer;
     package->index.save(writer);
-    fwrite(writer.result.data(), sizeof(char), sizeof(char) * 4096, package->data);
+    fwrite(writer.result.data(), sizeof(char), sizeof(char) * writer.result.size(), package->data);
+    char* emptyString = kakera_CreateEmptyString(4096 - writer.result.size());
+    fwrite(emptyString, sizeof(char), sizeof(char) * (4096 - writer.result.size()), package->data);
+    delete emptyString;
     return package;
 }
 
@@ -175,7 +185,10 @@ void kakera_AddFileToPackage(kakera_FilePackage * package, kakera_File * file, c
     fseek(package->data, 0, SEEK_END);
     fwrite(finalFile->data, sizeof(char), sizeof(char) * finalFile->size, package->data);
     fseek(package->data, 0, SEEK_SET);
-    fwrite(writer.result.data(), sizeof(char), sizeof(char) * 4096, package->data);
+    fwrite(writer.result.data(), sizeof(char), sizeof(char) * writer.result.size(), package->data);
+    char* emptyString = kakera_CreateEmptyString(4096 - writer.result.size());
+    fwrite(emptyString, sizeof(char), sizeof(char) * (4096 - writer.result.size()), package->data);
+    delete emptyString;
 }
 
 void kakera_SetPackageEncryptMethod(kakera_FilePackage * package, kakera_CryptMethod method)
