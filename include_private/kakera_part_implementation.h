@@ -10,6 +10,7 @@
 #include "kakera_event.h"
 #include "kakera_file.h"
 #include <map>
+#include <string>
 #include <cstdlib>
 #include "pugixml/pugixml.hpp"
 
@@ -44,10 +45,11 @@ struct kakera_Element
     Tree<kakera_Element*>::Node* node;
     bool isResponseEvent = true;
     map<kakera_ElementEvents, kakera_ElementEventCallback> callbackList;
-    Position_2D position;
+    Position_2D position = { 0, 0 };
     Position_2D viewport = { 0, 0 };
-    Size_2D displaySize;
-    Size_2D realSize;
+    Size_2D displaySize = { 0, 0 };
+    Size_2D realSize = { 0, 0 };
+    bool resizeFlag = false;
     double rotateAngle = 0.0;
     int SDLFormat;
     int SDLAccess;
@@ -55,6 +57,9 @@ struct kakera_Element
     RenderInfo renderInfo;
     bool isMouseEntered = false;
     map<const char*, void*> dataList;
+    bool isReceiveInput = false;
+    string receivedInput;
+    string receivedEditingInput;
 };
 
 struct kakera_File

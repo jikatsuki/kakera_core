@@ -7,6 +7,7 @@
 #include "kakera_part_implementation.h"
 #include "kakera_structs.hpp"
 #include <cstring>
+#include <iostream>
 
 using namespace std;
 
@@ -22,6 +23,7 @@ kakera_Element * kakera_CreateElement()
 
 void kakera_InitailizeElementComplex(kakera_Element * element, kakera_PixelFormats format, kakera_PositionReference reference, const char * name)
 {
+    kakera_CheckNullPointer(element);
     element->name = name;
     element->reference = reference;
     if (format == KAKERA_ELEMENT_TYPE_STATIC)
@@ -39,6 +41,7 @@ void kakera_InitailizeElementComplex(kakera_Element * element, kakera_PixelForma
 
 void kakera_DestroyElement(kakera_Element * element)
 {
+    kakera_CheckNullPointer(element);
     kakera_RunCallback(element, KAKERA_ELEMENT_ON_DESTROY);
     element->callbackList.clear();
     element->dataList.clear();
@@ -49,69 +52,82 @@ void kakera_DestroyElement(kakera_Element * element)
 
 void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h)
 {
+    kakera_CheckNullPointer(element);
     element->displaySize.w = w;
     element->displaySize.h = h;
 }
 
 void kakera_GetElementDisplaySize(kakera_Element * element, int * w, int * h)
 {
+    kakera_CheckNullPointer(element);
     *w = element->displaySize.w;
     *h = element->displaySize.h;
 }
 
 void kakera_SetElementRealSize(kakera_Element* element, int w, int h)
 {
+    kakera_CheckNullPointer(element);
+    element->resizeFlag = true;
     element->realSize.w = w;
     element->realSize.h = h;
 }
 
 void kakera_GetElementRealSize(kakera_Element * element, int * w, int * h)
 {
+    kakera_CheckNullPointer(element);    
     *w = element->realSize.w;
     *h = element->realSize.h;
 }
 
 void kakera_SetElementPosition(kakera_Element* element, int x, int y)
 {
+    kakera_CheckNullPointer(element);
     element->position.x = x;
     element->position.y = y;
 }
 
 void kakera_GetElementPosition(kakera_Element * element, int * x, int * y)
 {
+    kakera_CheckNullPointer(element);
     *x = element->position.x;
     *y = element->position.y;
 }
 
 void kakera_GetElementViewport(kakera_Element * element, int * x, int * y)
 {
+    kakera_CheckNullPointer(element);
     *x = element->viewport.x;
     *y = element->viewport.y;
 }
 
 void kakera_MoveElementViewport(kakera_Element* element, int x, int y)
 {
+    kakera_CheckNullPointer(element);
     element->viewport.x = x;
     element->viewport.y = y;
 }
 
 const char * kakera_GetElementName(kakera_Element * element)
 {
+    kakera_CheckNullPointer(element);
     return element->name;
 }
 
 void kakera_SetIsElementResponseEvent(kakera_Element * element, bool response)
 {
+    kakera_CheckNullPointer(element);
     element->isResponseEvent = response;
 }
 
 void kakera_BindEventToElement(kakera_Element * element, kakera_ElementEvents event, kakera_ElementEventCallback callback)
 {
+    kakera_CheckNullPointer(element);
     element->callbackList.emplace(event, callback);
 }
 
 kakera_Scene * kakera_GetSceneFromElement(kakera_Element * element)
 {
+    kakera_CheckNullPointer(element);
     return element->scene;
 }
 
@@ -128,10 +144,11 @@ char * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
     return result;
 }
 
-char * kakera_GetPixelsFromPicture(const kakera_File * picture)
+char * kakera_GetPixelsFromPicture(kakera_File * picture)
 {
+    kakera_CheckNullPointer(picture);
     SDL_Surface* RAWSurface = IMG_Load_RW(SDL_RWFromConstMem(picture->data, picture->size), 1);
-    delete picture;
+    kakera_DestroyFile(picture);
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
     int pixelSize = surface->pitch * surface->h;
@@ -141,15 +158,16 @@ char * kakera_GetPixelsFromPicture(const kakera_File * picture)
     return result;
 }
 
-char * kakera_GetPixelsFromText(const kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text, int* finalW, int* finalH)
+char * kakera_GetPixelsFromText(kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text, int* finalW, int* finalH)
 {
+    kakera_CheckNullPointer(font);
     TTF_Font* SDLFont = TTF_OpenFontRW(SDL_RWFromConstMem(font->data, font->size), 1, size);
     TTF_SetFontStyle(SDLFont, style);
     SDL_Surface* RAWSurface = TTF_RenderUTF8_Blended(SDLFont, text, { r, g, b });
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
     TTF_CloseFont(SDLFont);
-    delete font;
+    kakera_DestroyFile(font);
     int pixelSize = surface->pitch * surface->h;
     char* result = new char[pixelSize];
     memcpy(result, surface->pixels, pixelSize);
@@ -161,6 +179,13 @@ char * kakera_GetPixelsFromText(const kakera_File * font, int size, uint8_t r, u
 
 void kakera_SetElementContent(kakera_Element* element, void* pixels)
 {
+    kakera_CheckNullPointer(element);
+    if (element->resizeFlag && element->texture != nullptr)
+    {
+        element->resizeFlag = false;
+        SDL_DestroyTexture(element->texture);
+        element->texture = nullptr;
+    }
     if (element->texture == nullptr)
     {
         element->texture = SDL_CreateTexture(element->scene->window->renderer, element->SDLFormat, element->SDLAccess, element->realSize.w, element->realSize.h);
@@ -171,6 +196,7 @@ void kakera_SetElementContent(kakera_Element* element, void* pixels)
 
 void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixels, void * UPixels, void * VPixels, int YPitch, int UPitch, int VPitch)
 {
+    kakera_CheckNullPointer(element);
     if (element->SDLFormat != SDL_PIXELFORMAT_IYUV)
     {
         return;
@@ -185,6 +211,7 @@ void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixel
 
 void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
 {
+    kakera_CheckNullPointer(element);
     SDL_SetTextureAlphaMod(element->texture, opacity);
     if (!element->node->children.empty())
     {
@@ -197,6 +224,7 @@ void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
 
 void kakera_RotateElement(kakera_Element * element, double angle)
 {
+    kakera_CheckNullPointer(element);
     element->rotateAngle = angle;
     if (!element->node->children.empty())
     {
@@ -209,11 +237,13 @@ void kakera_RotateElement(kakera_Element * element, double angle)
 
 void kakera_SaveDataToElement(kakera_Element * element, const char * name, void * data)
 {
+    kakera_CheckNullPointer(element);
     element->dataList.emplace(name, data);
 }
 
 void * kakera_ReadDataFromElement(kakera_Element * element, const char * name)
 {
+    kakera_CheckNullPointer(element);
     auto iter = element->dataList.find(name);
     if (iter == element->dataList.end())
     {
@@ -223,4 +253,36 @@ void * kakera_ReadDataFromElement(kakera_Element * element, const char * name)
     {
         return iter->second;
     }
+}
+
+void kakera_SetElementReceiveInput(kakera_Element * element, bool receive)
+{
+    kakera_CheckNullPointer(element);
+    element->isReceiveInput = receive;
+}
+
+const char * kakera_GetElementInput(kakera_Element * element)
+{
+    kakera_CheckNullPointer(element);
+    if (element->isReceiveInput)
+    {
+        return element->receivedInput.c_str();
+    }
+    return nullptr;
+}
+
+const char * kakera_GetElementEditingInput(kakera_Element * element)
+{
+    kakera_CheckNullPointer(element);
+    if (element->isReceiveInput)
+    {
+        return element->receivedEditingInput.c_str();
+    }
+    return nullptr;
+}
+
+void kakera_SetElementInput(kakera_Element * element, const char * input)
+{
+    kakera_CheckNullPointer(element);
+    element->receivedInput = input;
 }

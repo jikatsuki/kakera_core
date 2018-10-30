@@ -22,8 +22,6 @@ extern KAKERA_EXPORT void               kakera_SetFocusElement(kakera_Scene* sce
 extern KAKERA_EXPORT kakera_Window*     kakera_GetWindowFromScene(kakera_Scene* scene);
 extern KAKERA_EXPORT void               kakera_StartScene(kakera_Window* window, kakera_Scene* scene);
 
-#define kakera_SetRootElementForScene(scene,element) kakera_AddElementToScene(scene, element, NULL)
-
 #ifdef __cplusplus
 }
 #endif

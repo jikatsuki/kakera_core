@@ -17,11 +17,13 @@ kakera_Scene * kakera_CreateScene()
 
 void kakera_InitializeScene(kakera_Scene* scene)
 {
+    kakera_CheckNullPointer(scene);
     kakera_RunCallback(scene, KAKERA_SCENE_ON_CREATE);
 }
 
 void kakera_DestroyScene(kakera_Scene * scene)
 {
+    kakera_CheckNullPointer(scene);
     kakera_RunCallback(scene, KAKERA_SCENE_ON_DESTROY);
     forward_list<kakera_Element*> elements;
     scene->elementList.BreadthFirstSearch([&elements](Tree<kakera_Element*>::Node* node) {
@@ -37,11 +39,15 @@ void kakera_DestroyScene(kakera_Scene * scene)
 
 void kakera_BindSceneWithWindow(kakera_Scene * scene, kakera_Window * window)
 {
+    kakera_CheckNullPointer(scene);
+    kakera_CheckNullPointer(window);
     scene->window = window;
 }
 
 void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, kakera_Element * parent)
 {
+    kakera_CheckNullPointer(scene);
+    kakera_CheckNullPointer(element);
     Tree<kakera_Element*>::Node* parentNode;
     if (parent != nullptr)
     {
@@ -64,6 +70,7 @@ void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, ka
 
 kakera_Element * kakera_GetElementByNameFromScene(kakera_Scene * scene, const char * name)
 {
+    kakera_CheckNullPointer(scene);
     kakera_Element* result = nullptr;
     scene->elementList.BreadthFirstSearch([&name, &result](Tree<kakera_Element*>::Node* node) {
         if (name == kakera_GetElementName(node->data))
@@ -76,6 +83,8 @@ kakera_Element * kakera_GetElementByNameFromScene(kakera_Scene * scene, const ch
 
 void kakera_DeleteElementFromScene(kakera_Scene * scene, kakera_Element * element)
 {
+    kakera_CheckNullPointer(scene);
+    kakera_CheckNullPointer(element);
     Tree<kakera_Element*>::Node* elementNode = scene->elementList.GetNodeByData(element);
     if (elementNode != nullptr)
     {
@@ -85,11 +94,14 @@ void kakera_DeleteElementFromScene(kakera_Scene * scene, kakera_Element * elemen
 
 void kakera_BindEventToScene(kakera_Scene * scene, kakera_SceneEvents event, kakera_SceneEventCallback callback)
 {
+    kakera_CheckNullPointer(scene);
     scene->callbackList.emplace(event, callback);
 }
 
 void kakera_SetFocusElement(kakera_Scene * scene, kakera_Element * element)
-{    
+{
+    kakera_CheckNullPointer(scene);
+    kakera_CheckNullPointer(element);
     if (scene->focusElement != element)
     {
         if (scene->focusElement != nullptr)
@@ -103,11 +115,14 @@ void kakera_SetFocusElement(kakera_Scene * scene, kakera_Element * element)
 
 kakera_Window * kakera_GetWindowFromScene(kakera_Scene * scene)
 {
+    kakera_CheckNullPointer(scene);
     return scene->window;
 }
 
 void kakera_StartScene(kakera_Window * window, kakera_Scene * scene)
 {
+    kakera_CheckNullPointer(scene);
+    kakera_CheckNullPointer(window);
     if (window->activeScene != nullptr)
     {
         kakera_RunCallback(window->activeScene, KAKERA_SCENE_ON_STOP);

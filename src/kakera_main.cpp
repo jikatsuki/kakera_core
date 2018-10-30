@@ -30,13 +30,13 @@ void kakera_Initialize()
 #endif //!_WIN32
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
-    Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID);
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+    //Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID);
+    //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 }
 
 void kakera_Terminate()
 {
-    Mix_Quit();
+    //Mix_Quit();
     TTF_Quit();
     SDL_Quit();
 }

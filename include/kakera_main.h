@@ -22,7 +22,7 @@ extern "C"
 #endif //!_MSC_VER
 
 #ifdef _MSC_VER
-    #define KAKERA_DEPRECATED __declspec(deprecated)
+    #define KAKERA_DEPRECATED __declspec(deprecated("WARNING: THIS IS AN UNRECOMMENDED API. YOU'D BETTER KNOW WHAT YOU ARE DOING."))
 #elif __GNUC__
     #define KAKERA_DEPRECATED __attribute__((deprecated))
 #else

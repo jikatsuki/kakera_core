@@ -29,6 +29,7 @@ kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int
 
 int kakera_DestroyWindow(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     SDL_DestroySemaphore(window->FPSSem);
     SDL_DestroyRenderer(window->renderer);
     SDL_DestroyWindow(window->window);
@@ -38,61 +39,73 @@ int kakera_DestroyWindow(kakera_Window * window)
 
 void kakera_GetWindowSize(kakera_Window * window, int * w, int * h)
 {
+    kakera_CheckNullPointer(window);
     SDL_GetWindowSize(window->window, w, h);
 }
 
 void kakera_SetWindowSize(kakera_Window * window, int w, int h)
 {
+    kakera_CheckNullPointer(window);
     SDL_SetWindowSize(window->window, w, h);
 }
 
 void kakera_GetWindowPosition(kakera_Window * window, int * x, int * y)
 {
+    kakera_CheckNullPointer(window);
     SDL_GetWindowPosition(window->window, x, y);
 }
 
 void kakera_SetWindowPosition(kakera_Window * window, int x, int y)
 {
+    kakera_CheckNullPointer(window);
     SDL_SetWindowPosition(window->window, x, y);
 }
 
 const char* kakera_GetWindowTitle(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     return SDL_GetWindowTitle(window->window);
 }
 
 void kakera_SetWindowTitle(kakera_Window * window, const char * title)
 {
+    kakera_CheckNullPointer(window);
     SDL_SetWindowTitle(window->window, title);
 }
 
 void kakera_ShowWindow(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     SDL_ShowWindow(window->window);
 }
 
 void kakera_HideWindow(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     SDL_HideWindow(window->window);
 }
 
 void kakera_MinimizeWindow(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     SDL_MinimizeWindow(window->window);
 }
 
 void kakera_MaximizeWindow(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     SDL_MaximizeWindow(window->window);
 }
 
 void kakera_RaiseWindow(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     SDL_RaiseWindow(window->window);
 }
 
 void kakera_SetWindowResizeable(kakera_Window * window, bool resizeable)
 {
+    kakera_CheckNullPointer(window);
     SDL_bool flag;
     if (resizeable)
     {
@@ -107,6 +120,7 @@ void kakera_SetWindowResizeable(kakera_Window * window, bool resizeable)
 
 void kakera_SetWindowIcon(kakera_Window * window, kakera_File* icon)
 {
+    kakera_CheckNullPointer(window);
     SDL_Surface* iconSurface = IMG_Load_RW(SDL_RWFromConstMem(icon->data, icon->size), 1);
     delete icon;
     SDL_SetWindowIcon(window->window, iconSurface);
@@ -115,22 +129,26 @@ void kakera_SetWindowIcon(kakera_Window * window, kakera_File* icon)
 
 kakera_WindowFPS kakera_GetWindowFPS(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     return window->FPS;
 }
 
 void kakera_SetWindowFPS(kakera_Window * window, kakera_WindowFPS FPS)
 {
+    kakera_CheckNullPointer(window);
     window->FPS = FPS;
 }
 
 kakera_Event * kakera_GetWindowEvent(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     return &window->event;
 }
 
 int kakera_private_EventFilter(void * userdata, SDL_Event * event)
 {
     kakera_Window* window = static_cast<kakera_Window*>(userdata);
+    
     switch (event->type)
     {
     case SDL_QUIT:
@@ -265,7 +283,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     }
     case SDL_MOUSEWHEEL:
     {
-        if (window->activeScene->focusElement != nullptr && window->activeScene->focusElement->isResponseEvent)
+        if (window->activeScene->focusElement != nullptr &&
+            window->activeScene->focusElement->isResponseEvent)
         {
             window->event.mouse.wheel.x = event->wheel.x;
             window->event.mouse.wheel.y = event->wheel.y;
@@ -275,7 +294,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     }
     case SDL_KEYDOWN:
     {
-        if (window->activeScene->focusElement != nullptr && window->activeScene->focusElement->isResponseEvent)
+        if (window->activeScene->focusElement != nullptr &&
+            window->activeScene->focusElement->isResponseEvent)
         {
             window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
             kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_DOWN);
@@ -284,16 +304,48 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     }
     case SDL_KEYUP:
     {
-        if (window->activeScene->focusElement != nullptr && window->activeScene->focusElement->isResponseEvent)
+        if (window->activeScene->focusElement != nullptr &&
+            window->activeScene->focusElement->isResponseEvent)
         {
             window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
             kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_UP);
         }
         break;
     }
-    default:
+    case SDL_TEXTEDITING:
+    {
+        if (window->activeScene->focusElement != nullptr &&
+            window->activeScene->focusElement->isResponseEvent &&
+            window->activeScene->focusElement->isReceiveInput)
+        {            
+            window->activeScene->focusElement->receivedEditingInput = string(event->edit.text);
+            auto inputRect = new SDL_Rect({ 
+                    window->activeScene->focusElement->renderInfo.positionAndSize->x + window->activeScene->focusElement->renderInfo.positionAndSize->w + event->edit.length,
+                    window->activeScene->focusElement->renderInfo.positionAndSize->y + window->activeScene->focusElement->renderInfo.positionAndSize->h / 2,
+                    0,
+                    0
+                });
+            SDL_SetTextInputRect(inputRect);
+            delete inputRect;
+            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);            
+        }
         break;
     }
+    case SDL_TEXTINPUT:
+    {
+        if (window->activeScene->focusElement != nullptr &&
+            window->activeScene->focusElement->isResponseEvent &&
+            window->activeScene->focusElement->isReceiveInput)
+        {           
+            window->activeScene->focusElement->receivedInput += string(event->text.text);                        
+            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);
+        }
+        break;
+    }
+    default:
+        break;
+    }    
+    
     return 0;
 }
 
@@ -434,8 +486,10 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
 
 void kakera_StartWindow(kakera_Window * window)
 {
+    kakera_CheckNullPointer(window);
     SDL_Event event;
     SDL_SetEventFilter(kakera_private_EventFilter, window);
+    SDL_StartTextInput();
     while (!window->isQuit)
     {
         SDL_TimerID FPSTimer = SDL_AddTimer(1000 / window->FPS, kakera_private_FPSSemCallback, window);        
@@ -446,6 +500,7 @@ void kakera_StartWindow(kakera_Window * window)
     }
     if (window->isQuit)
     {
+        SDL_StopTextInput();
         kakera_DestroyWindow(window);
         return;
     }

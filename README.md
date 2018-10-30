@@ -1,9 +1,6 @@
-# Kakera Engine Core
+# Kakera Engine Core ![progress](http://progressed.io/bar/60?title=progress) ![C++ Version](https://img.shields.io/badge/C%2B%2B%20Version-C%2B%2B14-brightgreen.svg) ![build](https://img.shields.io/buildkite/3826789cf8890b426057e6fe1c4e683bdf04fa24d498885489/master.svg) ![DUB](https://img.shields.io/dub/l/vibe-d.svg)
 
-![progress](http://progressed.io/bar/44?title=progress)
-![C++ Version](https://img.shields.io/badge/C%2B%2B%20Version-C%2B%2B14-brightgreen.svg)
-![build](https://img.shields.io/buildkite/3826789cf8890b426057e6fe1c4e683bdf04fa24d498885489/master.svg)
-![coverage](https://img.shields.io/badge/coverage-84%25-brightgreen.svg)
+
 ## What's Kakera engine?
 Kakera engine is a 2D GUI/game framework.
 
