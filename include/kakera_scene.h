@@ -20,7 +20,8 @@ extern KAKERA_EXPORT void               kakera_DeleteElementFromScene(kakera_Sce
 extern KAKERA_EXPORT void               kakera_BindEventToScene(kakera_Scene* scene, kakera_SceneEvents event, kakera_SceneEventCallback callback);
 extern KAKERA_EXPORT void               kakera_SetFocusElement(kakera_Scene* scene, kakera_Element* element);
 extern KAKERA_EXPORT kakera_Window*     kakera_GetWindowFromScene(kakera_Scene* scene);
-extern KAKERA_EXPORT void               kakera_StartScene(kakera_Window* window, kakera_Scene* scene);
+extern KAKERA_EXPORT void*              kakera_GetSceneUserdata(kakera_Scene* scene);
+extern KAKERA_EXPORT void               kakera_StartScene(kakera_Scene* scene, void* userdata);
 
 #ifdef __cplusplus
 }

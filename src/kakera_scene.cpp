@@ -119,14 +119,21 @@ kakera_Window * kakera_GetWindowFromScene(kakera_Scene * scene)
     return scene->window;
 }
 
-void kakera_StartScene(kakera_Window * window, kakera_Scene * scene)
+void * kakera_GetSceneUserdata(kakera_Scene * scene)
 {
     kakera_CheckNullPointer(scene);
-    kakera_CheckNullPointer(window);
-    if (window->activeScene != nullptr)
+    return scene->userdata;
+}
+
+void kakera_StartScene(kakera_Scene* scene, void* userdata)
+{
+    kakera_CheckNullPointer(scene);
+    kakera_CheckNullPointer(scene->window);
+    scene->userdata = userdata;
+    if (scene->window->activeScene != nullptr)
     {
-        kakera_RunCallback(window->activeScene, KAKERA_SCENE_ON_STOP);
+        kakera_RunCallback(scene->window->activeScene, KAKERA_SCENE_ON_STOP);
     }
-    window->activeScene = scene;
+    scene->window->activeScene = scene;
     kakera_RunCallback(scene, KAKERA_SCENE_ON_START);
 }

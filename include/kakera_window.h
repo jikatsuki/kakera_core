@@ -39,6 +39,7 @@ extern KAKERA_EXPORT void               kakera_GetWindowPosition(kakera_Window* 
 extern KAKERA_EXPORT void               kakera_SetWindowPosition(kakera_Window* window, int x, int y);
 extern KAKERA_EXPORT const char*        kakera_GetWindowTitle(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_SetWindowTitle(kakera_Window* window, const char* title);
+extern KAKERA_EXPORT void*              kakera_GetWindowUserdata(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_ShowWindow(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_HideWindow(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_MinimizeWindow(kakera_Window* window);
@@ -49,7 +50,7 @@ extern KAKERA_EXPORT void               kakera_SetWindowIcon(kakera_Window* wind
 extern KAKERA_EXPORT kakera_WindowFPS   kakera_GetWindowFPS(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_SetWindowFPS(kakera_Window* window, kakera_WindowFPS FPS);
 extern KAKERA_EXPORT kakera_Event*      kakera_GetWindowEvent(kakera_Window* window);
-extern KAKERA_EXPORT void               kakera_StartWindow(kakera_Window* window);
+extern KAKERA_EXPORT void               kakera_StartWindow(kakera_Window* window, void* userdata);
 
 #ifdef __cplusplus
 }

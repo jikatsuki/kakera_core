@@ -29,7 +29,7 @@ extern "C"
     #define KAKERA_DEPRECATED
 #endif
 
-#define KAKERA_CORE_VERSION "0.9.0"
+#define KAKERA_CORE_VERSION "0.9.2"
 
 extern KAKERA_EXPORT void kakera_Initialize();
 extern KAKERA_EXPORT void kakera_Terminate();

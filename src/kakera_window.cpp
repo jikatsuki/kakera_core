@@ -73,6 +73,12 @@ void kakera_SetWindowTitle(kakera_Window * window, const char * title)
     SDL_SetWindowTitle(window->window, title);
 }
 
+void * kakera_GetWindowUserdata(kakera_Window * window)
+{
+    kakera_CheckNullPointer(window);
+    return window->userdata;
+}
+
 void kakera_ShowWindow(kakera_Window * window)
 {
     kakera_CheckNullPointer(window);
@@ -484,9 +490,10 @@ void kakera_pirvate_RefreshFrame(kakera_Window * window)
     SDL_RenderPresent(window->renderer);
 }
 
-void kakera_StartWindow(kakera_Window * window)
+void kakera_StartWindow(kakera_Window * window, void* userdata)
 {
     kakera_CheckNullPointer(window);
+    window->userdata = userdata;
     SDL_Event event;
     SDL_SetEventFilter(kakera_private_EventFilter, window);
     SDL_StartTextInput();

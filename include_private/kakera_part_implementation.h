@@ -26,6 +26,7 @@ struct kakera_Window
     kakera_Scene* activeScene = nullptr;
     kakera_WindowFPS FPS = KAKERA_WINDOW_30FPS;
     kakera_Event event;
+    void* userdata = nullptr;
 };
 
 struct kakera_Scene
@@ -35,6 +36,7 @@ struct kakera_Scene
     map<kakera_SceneEvents, kakera_SceneEventCallback> callbackList;
     kakera_Element* mouseEnteredElement = nullptr;
     kakera_Element* focusElement = nullptr;
+    void* userdata = nullptr;
 };
 
 struct kakera_Element

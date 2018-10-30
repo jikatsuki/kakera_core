@@ -329,7 +329,7 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 
-*.sln
-*.vcxproj
-*.filters
-*.user
+kakera_core.sln
+kakera_core.vcxproj
+kakera_core.vcxproj.filters
+kakera_core.vcxproj.user
