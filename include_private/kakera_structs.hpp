@@ -31,7 +31,7 @@ public:
             {
                 Node* node = tempStack.top();
                 tempStack.pop();
-                invoke(callback, node);
+				callback(node);
                 for (auto iter = node->children.rbegin(); iter != node->children.rend(); iter++)
                 {
                     tempStack.emplace(*iter);
@@ -50,7 +50,7 @@ public:
             {
                 Node* node = tempQueue.front();
                 tempQueue.pop();
-                invoke(callback, node);
+				callback(node);
                 for (auto iter = node->children.begin(); iter != node->children.end(); iter++)
                 {
                     tempQueue.emplace(*iter);
