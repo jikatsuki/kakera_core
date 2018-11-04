@@ -9,15 +9,15 @@
 
 #define kakera_RunCallback(target_ptr,type)\
 {\
-    if (target_ptr->callbackList.find(type) != target_ptr->callbackList.end())\
-        target_ptr->callbackList[type](target_ptr);\
+    auto iter = target_ptr->callbackList.find(type);\
+    if (iter != target_ptr->callbackList.end())\
+        iter->second(target_ptr);\
 }
 
 #define kakera_RunCallbackAsync(target_ptr,type,lock)\
 {\
     auto target = target_ptr;\
     std::thread temp_thread([&target, &lock]() {\
-        auto iter = target->callbackList.find(type);\
         kakera_RunCallback(target,type);\
     });\
     temp_thread.detach();\

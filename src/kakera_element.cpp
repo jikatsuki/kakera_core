@@ -7,7 +7,7 @@
 #include "kakera_part_implementation.h"
 #include "kakera_structs.hpp"
 #include <cstring>
-#include <iostream>
+#include <mutex>
 
 using namespace std;
 
@@ -122,6 +122,8 @@ void kakera_SetIsElementResponseEvent(kakera_Element * element, bool response)
 void kakera_BindEventToElement(kakera_Element * element, kakera_ElementEvents event, kakera_ElementEventCallback callback)
 {
     kakera_CheckNullPointer(element);
+    mutex* lock = &element->scene->window->eventLock;
+    lock_guard<mutex> locker(*lock);
     element->callbackList.emplace(event, callback);
 }
 
