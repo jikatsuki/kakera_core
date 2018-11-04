@@ -13,6 +13,16 @@
         target_ptr->callbackList[type](target_ptr);\
 }
 
+#define kakera_RunCallbackAsync(target_ptr,type,lock)\
+{\
+    auto target = target_ptr;\
+    std::thread temp_thread([&target, &lock]() {\
+        auto iter = target->callbackList.find(type);\
+        kakera_RunCallback(target,type);\
+    });\
+    temp_thread.detach();\
+}
+
 #define kakera_CheckNullPointer(ptr)\
 {\
     if (ptr == nullptr)\

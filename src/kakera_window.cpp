@@ -8,6 +8,8 @@
 #include "kakera_tools.hpp"
 #include <forward_list>
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 
@@ -154,7 +156,8 @@ kakera_Event * kakera_GetWindowEvent(kakera_Window * window)
 int kakera_private_EventFilter(void * userdata, SDL_Event * event)
 {
     kakera_Window* window = static_cast<kakera_Window*>(userdata);
-    
+    auto eventLock = &window->eventLock;
+
     switch (event->type)
     {
     case SDL_QUIT:
@@ -181,13 +184,13 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                         if (window->activeScene->mouseEnteredElement != nullptr)
                         {
                             window->activeScene->mouseEnteredElement->isMouseEntered = false;
-                            kakera_RunCallback(window->activeScene->mouseEnteredElement, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
+                            kakera_RunCallbackAsync(window->activeScene->mouseEnteredElement, KAKERA_ELEMENT_ON_MOUSE_LEAVE, eventLock);
                         }
                         element->isMouseEntered = true;
-                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_ENTER);                        
+                        kakera_RunCallbackAsync(element, KAKERA_ELEMENT_ON_MOUSE_ENTER, eventLock);
                         window->activeScene->mouseEnteredElement = element;
                     }
-                    kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_MOVE);
+                    kakera_RunCallbackAsync(element, KAKERA_ELEMENT_ON_MOUSE_MOVE, eventLock);
                     break;
                 }               
             }
@@ -229,7 +232,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                         ) &&
                     event->button.state == SDL_PRESSED)
                 {
-                    kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_DOWN);
+                    kakera_RunCallbackAsync(element, KAKERA_ELEMENT_ON_MOUSE_DOWN, eventLock);
                     break;
                 }
             }
@@ -273,13 +276,13 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                 {
                     if (event->button.clicks == 2)
                     {
-                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_DOUBLE_CLICK);
+                        kakera_RunCallbackAsync(element, KAKERA_ELEMENT_ON_DOUBLE_CLICK, eventLock);
                     }
                     else if (event->button.clicks == 1)
                     {
-                        kakera_RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
+                        kakera_RunCallbackAsync(element, KAKERA_ELEMENT_ON_CLICK, eventLock);
                     }
-                    kakera_RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_UP);
+                    kakera_RunCallbackAsync(element, KAKERA_ELEMENT_ON_MOUSE_UP, eventLock);
                     kakera_SetFocusElement(window->activeScene, element);
                     break;
                 }
@@ -294,7 +297,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
         {
             window->event.mouse.wheel.x = event->wheel.x;
             window->event.mouse.wheel.y = event->wheel.y;
-            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL);
+            kakera_RunCallbackAsync(window->activeScene->focusElement, KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL, eventLock);
         }
         break;
     }
@@ -304,7 +307,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             window->activeScene->focusElement->isResponseEvent)
         {
             window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
-            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_DOWN);
+            kakera_RunCallbackAsync(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_DOWN, eventLock);
         }
         break;
     }
@@ -314,7 +317,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             window->activeScene->focusElement->isResponseEvent)
         {
             window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
-            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_UP);
+            kakera_RunCallbackAsync(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_UP, eventLock);
         }
         break;
     }
@@ -333,7 +336,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                 });
             SDL_SetTextInputRect(inputRect);
             delete inputRect;
-            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);            
+            kakera_RunCallbackAsync(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT, eventLock);            
         }
         break;
     }
@@ -344,7 +347,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             window->activeScene->focusElement->isReceiveInput)
         {           
             window->activeScene->focusElement->receivedInput += string(event->text.text);                        
-            kakera_RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);
+            kakera_RunCallbackAsync(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT, eventLock);
         }
         break;
     }

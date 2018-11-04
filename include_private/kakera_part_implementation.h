@@ -13,6 +13,7 @@
 #include <string>
 #include <cstdlib>
 #include "pugixml/pugixml.hpp"
+#include <mutex>
 
 using namespace std;
 
@@ -26,6 +27,7 @@ struct kakera_Window
     kakera_Scene* activeScene = nullptr;
     kakera_WindowFPS FPS = KAKERA_WINDOW_30FPS;
     kakera_Event event;
+    mutex eventLock;
     void* userdata = nullptr;
 };
 
