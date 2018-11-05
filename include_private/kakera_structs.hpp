@@ -80,7 +80,7 @@ public:
         return _root;
     }
 
-    void Clear(bool useCFree = false)
+    void Clear()
     {
         forward_list<Node*> tempList;
         BreadthFirstSearch([&tempList](Node* node) {
@@ -123,7 +123,7 @@ public:
         }
     }
 
-    int DeleteNode(Node* node, bool useCFree = false)
+    int DeleteNode(Node* node)
     {
         if (node != nullptr && node != _root)
         {
@@ -142,7 +142,7 @@ public:
         }
         else if (node != nullptr && node == _root)
         {
-            Clear(useCFree);
+            Clear();
             return 0;
         }
         else if (node == nullptr)

@@ -58,7 +58,7 @@ extern KAKERA_EXPORT void               kakera_SetElementReceiveInput(kakera_Ele
 extern KAKERA_EXPORT const char*        kakera_GetElementInput(kakera_Element* element);
 extern KAKERA_EXPORT const char*        kakera_GetElementEditingInput(kakera_Element* element);
 
-extern KAKERA_EXPORT KAKERA_DEPRECATED void kakera_DestroyElement(kakera_Element* element);
+extern KAKERA_EXPORT KAKERA_DEPRECATED void kakera_DestroyElement(kakera_Element** element);
 extern KAKERA_EXPORT KAKERA_DEPRECATED void kakera_SetElementInput(kakera_Element* element, const char* input);
 
 #ifdef __cplusplus

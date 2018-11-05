@@ -9,6 +9,8 @@
 #include <cstring>
 #include <mutex>
 
+KAKERA_USING_REFRESH_EVENT
+
 using namespace std;
 
 kakera_Element * kakera_CreateElement()
@@ -39,15 +41,16 @@ void kakera_InitailizeElementComplex(kakera_Element * element, kakera_PixelForma
     kakera_RunCallback(element, KAKERA_ELEMENT_ON_CREATE);    
 }
 
-void kakera_DestroyElement(kakera_Element * element)
+void kakera_DestroyElement(kakera_Element ** element)
 {
-    kakera_CheckNullPointer(element);
-    kakera_RunCallback(element, KAKERA_ELEMENT_ON_DESTROY);
-    element->callbackList.clear();
-    element->dataList.clear();
-    delete element->renderInfo.positionAndSize;
-    delete element->renderInfo.cropArea;
-    kakera_DeleteElementFromScene(element->scene, element);
+    kakera_CheckNullPointer(*element);
+    kakera_RunCallback((*element), KAKERA_ELEMENT_ON_DESTROY);
+    (*element)->callbackList.clear();
+    (*element)->dataList.clear();
+    delete (*element)->renderInfo.positionAndSize;
+    delete (*element)->renderInfo.cropArea;
+    kakera_DeleteElementFromScene((*element)->scene, (*element));
+    *element = nullptr;
 }
 
 void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h)
@@ -55,6 +58,7 @@ void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h)
     kakera_CheckNullPointer(element);
     element->displaySize.w = w;
     element->displaySize.h = h;
+    kakera_PushRefreshEvent();
 }
 
 void kakera_GetElementDisplaySize(kakera_Element * element, int * w, int * h)
@@ -70,6 +74,7 @@ void kakera_SetElementRealSize(kakera_Element* element, int w, int h)
     element->resizeFlag = true;
     element->realSize.w = w;
     element->realSize.h = h;
+    kakera_PushRefreshEvent();
 }
 
 void kakera_GetElementRealSize(kakera_Element * element, int * w, int * h)
@@ -84,6 +89,7 @@ void kakera_SetElementPosition(kakera_Element* element, int x, int y)
     kakera_CheckNullPointer(element);
     element->position.x = x;
     element->position.y = y;
+    kakera_PushRefreshEvent();
 }
 
 void kakera_GetElementPosition(kakera_Element * element, int * x, int * y)
@@ -105,6 +111,7 @@ void kakera_MoveElementViewport(kakera_Element* element, int x, int y)
     kakera_CheckNullPointer(element);
     element->viewport.x = x;
     element->viewport.y = y;
+    kakera_PushRefreshEvent();
 }
 
 const char * kakera_GetElementName(kakera_Element * element)
@@ -194,6 +201,7 @@ void kakera_SetElementContent(kakera_Element* element, void* pixels)
         SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
     }
     SDL_UpdateTexture(element->texture, NULL, pixels, element->realSize.w * 4);
+    kakera_PushRefreshEvent();
 }
 
 void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixels, void * UPixels, void * VPixels, int YPitch, int UPitch, int VPitch)
@@ -209,6 +217,7 @@ void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixel
         SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
     }
     SDL_UpdateYUVTexture(element->texture, NULL, static_cast<Uint8*>(YPixels), YPitch, static_cast<Uint8*>(UPixels), UPitch, static_cast<Uint8*>(VPixels), VPitch);
+    kakera_PushRefreshEvent();
 }
 
 void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
@@ -222,6 +231,7 @@ void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
             SDL_SetTextureAlphaMod(node->data->texture, opacity);
         }
     }
+    kakera_PushRefreshEvent();
 }
 
 void kakera_RotateElement(kakera_Element * element, double angle)
@@ -235,6 +245,7 @@ void kakera_RotateElement(kakera_Element * element, double angle)
             node->data->rotateAngle = angle;
         }
     }
+    kakera_PushRefreshEvent();
 }
 
 void kakera_SaveDataToElement(kakera_Element * element, const char * name, void * data)

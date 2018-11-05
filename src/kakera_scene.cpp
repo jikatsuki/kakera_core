@@ -6,6 +6,9 @@
 #include "kakera_part_implementation.h"
 #include <forward_list>
 #include <map>
+#include <mutex>
+
+KAKERA_USING_REFRESH_EVENT
 
 using namespace std;
 
@@ -21,20 +24,21 @@ void kakera_InitializeScene(kakera_Scene* scene)
     kakera_RunCallback(scene, KAKERA_SCENE_ON_CREATE);
 }
 
-void kakera_DestroyScene(kakera_Scene * scene)
+void kakera_DestroyScene(kakera_Scene ** scene)
 {
-    kakera_CheckNullPointer(scene);
-    kakera_RunCallback(scene, KAKERA_SCENE_ON_DESTROY);
+    kakera_CheckNullPointer(*scene);
+    kakera_RunCallback((*scene), KAKERA_SCENE_ON_DESTROY);
     forward_list<kakera_Element*> elements;
-    scene->elementList.BreadthFirstSearch([&elements](Tree<kakera_Element*>::Node* node) {
+    (*scene)->elementList.BreadthFirstSearch([&elements](Tree<kakera_Element*>::Node* node) {
         elements.emplace_front(node->data);
     });
     for (auto element : elements)
     {
-        kakera_DestroyElement(element);
+        kakera_DestroyElement(&element);
     }
-    scene->callbackList.clear();
-    delete scene;
+    (*scene)->callbackList.clear();
+    delete *scene;
+    *scene = nullptr;
 }
 
 void kakera_BindSceneWithWindow(kakera_Scene * scene, kakera_Window * window)
@@ -130,10 +134,12 @@ void kakera_StartScene(kakera_Scene* scene, void* userdata)
     kakera_CheckNullPointer(scene);
     kakera_CheckNullPointer(scene->window);
     scene->userdata = userdata;
+    auto lock = &scene->window->eventLock;
     if (scene->window->activeScene != nullptr)
     {
-        kakera_RunCallback(scene->window->activeScene, KAKERA_SCENE_ON_STOP);
+        kakera_RunCallbackAsync(scene->window->activeScene, KAKERA_SCENE_ON_STOP, lock);
     }
     scene->window->activeScene = scene;
-    kakera_RunCallback(scene, KAKERA_SCENE_ON_START);
+    kakera_RunCallbackAsync(scene, KAKERA_SCENE_ON_START, lock);
+    kakera_PushRefreshEvent();
 }

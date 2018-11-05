@@ -32,7 +32,7 @@ typedef enum {
 
 extern KAKERA_EXPORT unsigned int       kakera_GetWindowPosCentered();
 extern KAKERA_EXPORT kakera_Window*     kakera_CreateWindow(const char* title, int x, int y, int w, int h, int flags);
-extern KAKERA_EXPORT int                kakera_DestroyWindow(kakera_Window* window);
+extern KAKERA_EXPORT int                kakera_DestroyWindow(kakera_Window** window);
 extern KAKERA_EXPORT void               kakera_GetWindowSize(kakera_Window* window, int* w, int* h);
 extern KAKERA_EXPORT void               kakera_SetWindowSize(kakera_Window* window, int w, int h);
 extern KAKERA_EXPORT void               kakera_GetWindowPosition(kakera_Window* window, int* x, int* y);
@@ -50,7 +50,7 @@ extern KAKERA_EXPORT void               kakera_SetWindowIcon(kakera_Window* wind
 extern KAKERA_EXPORT kakera_WindowFPS   kakera_GetWindowFPS(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_SetWindowFPS(kakera_Window* window, kakera_WindowFPS FPS);
 extern KAKERA_EXPORT kakera_Event*      kakera_GetWindowEvent(kakera_Window* window);
-extern KAKERA_EXPORT void               kakera_StartWindow(kakera_Window* window, void* userdata);
+extern KAKERA_EXPORT void               kakera_StartWindow(kakera_Window** window, void* userdata);
 
 #ifdef __cplusplus
 }

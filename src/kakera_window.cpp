@@ -11,6 +11,8 @@
 #include <thread>
 #include <mutex>
 
+KAKERA_USING_REFRESH_EVENT
+
 using namespace std;
 
 unsigned int kakera_GetWindowPosCentered()
@@ -29,13 +31,14 @@ kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int
     return result;
 }
 
-int kakera_DestroyWindow(kakera_Window * window)
+int kakera_DestroyWindow(kakera_Window ** window)
 {
-    kakera_CheckNullPointer(window);
-    SDL_DestroySemaphore(window->FPSSem);
-    SDL_DestroyRenderer(window->renderer);
-    SDL_DestroyWindow(window->window);
-    delete window;
+    kakera_CheckNullPointer(*window);
+    SDL_DestroySemaphore((*window)->FPSSem);
+    SDL_DestroyRenderer((*window)->renderer);
+    SDL_DestroyWindow((*window)->window);
+    delete *window;
+    (*window) = nullptr;
     return 0;
 }
 
@@ -151,6 +154,135 @@ kakera_Event * kakera_GetWindowEvent(kakera_Window * window)
 {
     kakera_CheckNullPointer(window);
     return &window->event;
+}
+
+void kakera_pirvate_RefreshFrame(kakera_Window * window)
+{
+    SDL_RenderClear(window->renderer);
+    if (window->activeScene != nullptr)
+    {
+        forward_list<kakera_Element*> elementList;
+        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+            elementList.emplace_front(node->data);
+        });
+        elementList.reverse();
+        for (auto element : elementList)
+        {
+            switch (element->reference)
+            {
+            case KAKERA_POSREFER_PARENT:
+            {
+                if (element->node == window->activeScene->elementList.GetRoot())
+                {
+                    int window_w, window_h;
+                    kakera_GetWindowSize(window, &window_w, &window_h);
+                    element->position.x = 0;
+                    element->position.y = 0;
+                    element->displaySize.w = window_w;
+                    element->displaySize.h = window_h;
+                    element->renderInfo.positionAndSize->x = 0;
+                    element->renderInfo.positionAndSize->y = 0;
+                    element->renderInfo.positionAndSize->w = window_w;
+                    element->renderInfo.positionAndSize->h = window_h;
+                }
+                else
+                {
+                    int viewportX1 = element->node->parent->data->viewport.x;
+                    int viewportX2 = element->node->parent->data->viewport.x + element->node->parent->data->displaySize.w;
+                    int viewportY1 = element->node->parent->data->viewport.y;
+                    int viewportY2 = element->node->parent->data->viewport.y + element->node->parent->data->displaySize.h;
+                    int thisX1 = element->position.x;
+                    int thisX2 = element->position.x + element->displaySize.w;
+                    int thisY1 = element->position.y;
+                    int thisY2 = element->position.y + element->displaySize.h;
+                    if (getAbsoluteValue<int>(thisX2 + thisX1 - viewportX2 - viewportX1) <= (viewportX2 - viewportX1 + thisX2 - thisX1) &&
+                        getAbsoluteValue<int>(thisY2 + thisY1 - viewportY2 - viewportY1) <= (viewportY2 - viewportY1 + thisY2 - thisY1))
+                    {
+                        if (thisX1 >= viewportX1)
+                        {
+                            element->renderInfo.positionAndSize->x = thisX1 - viewportX1 + element->node->parent->data->position.x;
+                            if (thisX2 > viewportX2)
+                            {
+                                element->renderInfo.positionAndSize->w = element->displaySize.w - thisX2 + viewportX2;
+                                element->renderInfo.cropArea->x = 0;
+                                element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
+                            }
+                            else
+                            {
+                                element->renderInfo.positionAndSize->w = element->displaySize.w;
+                                element->renderInfo.cropArea->x = 0;
+                                element->renderInfo.cropArea->w = element->realSize.w;
+                            }
+                        }
+                        else
+                        {
+                            element->renderInfo.positionAndSize->x = element->node->parent->data->position.x;
+                            element->renderInfo.positionAndSize->w = thisX2 - viewportX1;
+                            element->renderInfo.cropArea->x = (static_cast<float>(element->realSize.w) / static_cast<float>(element->displaySize.w)) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
+                            element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
+                        }
+
+                        if (thisY1 >= viewportY1)
+                        {
+                            element->renderInfo.positionAndSize->y = thisY1 - viewportY1 + element->node->parent->data->position.y;
+                            if (thisY2 > viewportY2)
+                            {
+                                element->renderInfo.positionAndSize->h = element->displaySize.h - thisY2 + viewportY2;
+                                element->renderInfo.cropArea->y = 0;
+                                element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
+                            }
+                            else
+                            {
+                                element->renderInfo.positionAndSize->h = element->displaySize.h;
+                                element->renderInfo.cropArea->y = 0;
+                                element->renderInfo.cropArea->h = element->realSize.h;
+                            }
+                        }
+                        else
+                        {
+                            element->renderInfo.positionAndSize->y = element->node->parent->data->position.y;
+                            element->renderInfo.positionAndSize->h = thisY2 - viewportY1;
+                            element->renderInfo.cropArea->y = (static_cast<float>(element->realSize.h) / static_cast<float>(element->displaySize.h)) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
+                            element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
+                        }
+                    }
+                    else
+                    {
+                        element->renderInfo.isRender = false;
+                    }
+                }
+                break;
+            }
+            case KAKERA_POSREFER_WINDOW:
+            {
+                element->renderInfo.positionAndSize->x = element->position.x;
+                element->renderInfo.positionAndSize->y = element->position.y;
+                element->renderInfo.positionAndSize->w = element->displaySize.w;
+                element->renderInfo.positionAndSize->h = element->displaySize.h;
+                element->renderInfo.cropArea->x = 0;
+                element->renderInfo.cropArea->y = 0;
+                element->renderInfo.cropArea->w = element->realSize.w;
+                element->renderInfo.cropArea->h = element->realSize.h;
+                break;
+            }
+            default:
+                break;
+            }
+            if (element->renderInfo.isRender && element->texture != nullptr)
+            {
+                SDL_RenderCopyEx(
+                    window->renderer,
+                    element->texture,
+                    element->renderInfo.cropArea,
+                    element->renderInfo.positionAndSize,
+                    element->rotateAngle,
+                    NULL,
+                    SDL_FLIP_NONE
+                );
+            }
+        }
+    }
+    SDL_RenderPresent(window->renderer);
 }
 
 int kakera_private_EventFilter(void * userdata, SDL_Event * event)
@@ -351,6 +483,14 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
         }
         break;
     }
+    case SDL_USEREVENT:
+    {
+        if (window != nullptr && event->user.type == kakera_RefreshEvent)
+        {
+            kakera_pirvate_RefreshFrame(window);
+        }
+        break;
+    }
     default:
         break;
     }    
@@ -365,150 +505,34 @@ Uint32 kakera_private_FPSSemCallback(Uint32 interval, void * param)
     return 0;
 }
 
-void kakera_pirvate_RefreshFrame(kakera_Window * window)
+void kakera_StartWindow(kakera_Window ** window, void* userdata)
 {
-    SDL_RenderClear(window->renderer);
-    if (window->activeScene != nullptr)
+    kakera_CheckNullPointer(*window);
+    (*window)->userdata = userdata;
+    SDL_Event event;
+    SDL_SetEventFilter(kakera_private_EventFilter, *window);
+    SDL_StartTextInput();
+    kakera_pirvate_RefreshFrame(*window);
+    while (!(*window)->isQuit)
     {
-        forward_list<kakera_Element*> elementList;
-        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-            elementList.emplace_front(node->data);
-        });
-        elementList.reverse();
-        for (auto element : elementList)
+        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, kakera_private_FPSSemCallback, *window);
+        if ((*window)->activeScene != nullptr)
         {
-            kakera_RunCallback(element, KAKERA_ELEMENT_ON_FRAME_REFRESH);
-            switch (element->reference)
+            forward_list<kakera_Element*> elementList;
+            (*window)->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+                elementList.emplace_front(node->data);
+            });
+            elementList.reverse();
+            for (auto element : elementList)
             {
-            case KAKERA_POSREFER_PARENT:
-            {
-                if (element->node == window->activeScene->elementList.GetRoot())
-                {
-                    int window_w, window_h;
-                    kakera_GetWindowSize(window, &window_w, &window_h);
-                    kakera_SetElementPosition(element, 0, 0);
-                    kakera_SetElementDisplaySize(element, window_w, window_h);
-                    element->renderInfo.positionAndSize->x = 0;
-                    element->renderInfo.positionAndSize->y = 0;
-                    element->renderInfo.positionAndSize->w = window_w;
-                    element->renderInfo.positionAndSize->h = window_h;
-                }
-                else
-                {
-                    int viewportX1 = element->node->parent->data->viewport.x;
-                    int viewportX2 = element->node->parent->data->viewport.x + element->node->parent->data->displaySize.w;
-                    int viewportY1 = element->node->parent->data->viewport.y;
-                    int viewportY2 = element->node->parent->data->viewport.y + element->node->parent->data->displaySize.h;
-                    int thisX1 = element->position.x;
-                    int thisX2 = element->position.x + element->displaySize.w;
-                    int thisY1 = element->position.y;
-                    int thisY2 = element->position.y + element->displaySize.h;
-                    if (getAbsoluteValue<int>(thisX2+thisX1-viewportX2-viewportX1) <= (viewportX2-viewportX1+thisX2-thisX1) &&
-                        getAbsoluteValue<int>(thisY2+thisY1-viewportY2-viewportY1) <= (viewportY2-viewportY1+thisY2-thisY1))
-                    {                     
-                        if (thisX1 >= viewportX1)
-                        {
-                            element->renderInfo.positionAndSize->x = thisX1 - viewportX1 + element->node->parent->data->position.x;
-                            if (thisX2 > viewportX2)
-                            {
-                                element->renderInfo.positionAndSize->w = element->displaySize.w - thisX2 + viewportX2;
-                                element->renderInfo.cropArea->x = 0;
-                                element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
-                            }
-                            else
-                            {
-                                element->renderInfo.positionAndSize->w = element->displaySize.w;
-                                element->renderInfo.cropArea->x = 0;
-                                element->renderInfo.cropArea->w = element->realSize.w;
-                            }
-                        }
-                        else
-                        {
-                            element->renderInfo.positionAndSize->x = element->node->parent->data->position.x;
-                            element->renderInfo.positionAndSize->w = thisX2 - viewportX1;
-                            element->renderInfo.cropArea->x = (static_cast<float>(element->realSize.w) / static_cast<float>(element->displaySize.w)) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
-                            element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
-                        }
-
-                        if (thisY1 >= viewportY1)
-                        {
-                            element->renderInfo.positionAndSize->y = thisY1 - viewportY1 + element->node->parent->data->position.y;
-                            if (thisY2 > viewportY2)
-                            {
-                                element->renderInfo.positionAndSize->h = element->displaySize.h - thisY2 + viewportY2;
-                                element->renderInfo.cropArea->y = 0;
-                                element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
-                            }
-                            else
-                            {
-                                element->renderInfo.positionAndSize->h = element->displaySize.h;
-                                element->renderInfo.cropArea->y = 0;
-                                element->renderInfo.cropArea->h = element->realSize.h;
-                            }
-                        }
-                        else
-                        {
-                            element->renderInfo.positionAndSize->y = element->node->parent->data->position.y;
-                            element->renderInfo.positionAndSize->h = thisY2 - viewportY1;
-                            element->renderInfo.cropArea->y = (static_cast<float>(element->realSize.h) / static_cast<float>(element->displaySize.h)) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
-                            element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
-                        }
-                    }
-                    else
-                    {
-                        element->renderInfo.isRender = false;
-                    }
-                }
-                break;
-            }
-            case KAKERA_POSREFER_WINDOW:
-            {
-                element->renderInfo.positionAndSize->x = element->position.x;
-                element->renderInfo.positionAndSize->y = element->position.y;
-                element->renderInfo.positionAndSize->w = element->displaySize.w;
-                element->renderInfo.positionAndSize->h = element->displaySize.h;                
-                element->renderInfo.cropArea->x = 0;
-                element->renderInfo.cropArea->y = 0;
-                element->renderInfo.cropArea->w = element->realSize.w;
-                element->renderInfo.cropArea->h = element->realSize.h;
-                break;
-            }
-            default:
-                break;
-            }
-            if (element->renderInfo.isRender && element->texture != nullptr)
-            {
-                SDL_RenderCopyEx(
-                    window->renderer,
-                    element->texture,
-                    element->renderInfo.cropArea,
-                    element->renderInfo.positionAndSize,
-                    element->rotateAngle,
-                    NULL,
-                    SDL_FLIP_NONE
-                );
+                kakera_RunCallback(element, KAKERA_ELEMENT_ON_FRAME_REFRESH);
             }
         }
-    }
-    SDL_RenderPresent(window->renderer);
-}
-
-void kakera_StartWindow(kakera_Window * window, void* userdata)
-{
-    kakera_CheckNullPointer(window);
-    window->userdata = userdata;
-    SDL_Event event;
-    SDL_SetEventFilter(kakera_private_EventFilter, window);
-    SDL_StartTextInput();
-    while (!window->isQuit)
-    {
-        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / window->FPS, kakera_private_FPSSemCallback, window);        
-        kakera_pirvate_RefreshFrame(window);
         SDL_PollEvent(&event);        
-        SDL_SemWait(window->FPSSem);
+        SDL_SemWait((*window)->FPSSem);
         SDL_RemoveTimer(FPSTimer);
     }
-    if (window->isQuit)
+    if ((*window)->isQuit)
     {
         SDL_StopTextInput();
         kakera_DestroyWindow(window);
