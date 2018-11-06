@@ -148,20 +148,20 @@ typedef struct {
     kakera_MouseButtonStatus status;
     kakera_Point pointer;
     kakera_Point wheel;
-} kakera_Mouse_Event;
+} kakera_MouseEvent;
 
 typedef struct {
     kakera_KeyboardKey key;
-} kakera_Keyboard_Event;
+} kakera_KeyboardEvent;
 
 typedef struct {
-} kakera_Wheel_Event;
+} kakera_WheelEvent;
 
 typedef union {
-    //この歌声がUNION!!!
-    kakera_Mouse_Event mouse;
-    kakera_Keyboard_Event keyboard;
-    kakera_Wheel_Event wheel;
+    //この歌声がUNION!!
+    kakera_MouseEvent mouse;
+    kakera_KeyboardEvent keyboard;
+    kakera_WheelEvent wheel;
 } kakera_Event;
 
 #ifdef __cplusplus

@@ -16,6 +16,7 @@
 #include <mutex>
 
 using namespace std;
+using namespace kakera_private;
 
 struct kakera_Window
 {

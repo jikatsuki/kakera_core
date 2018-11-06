@@ -1,5 +1,10 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif //!_MSC_VER
+
 #include "kakera_main.h"
 #include "kakera_header.h"
+#include "kakera_tools.hpp"
 
 #ifdef _WIN32
 

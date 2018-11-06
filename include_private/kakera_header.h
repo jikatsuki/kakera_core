@@ -7,14 +7,14 @@
 #include <SDL2/SDL_ttf.h>
 #include <cstdlib>
 
-#define kakera_RunCallback(target_ptr,type)\
+#define kakera_private_RunCallback(target_ptr,type)\
 {\
     auto iter = target_ptr->callbackList.find(type);\
     if (iter != target_ptr->callbackList.end())\
         iter->second(target_ptr);\
 }
 
-#define kakera_RunCallbackAsync(target_ptr,type,lock)\
+#define kakera_private_RunCallbackAsync(target_ptr,type,lock)\
 {\
     auto target = target_ptr;\
     auto iter = target->callbackList.find(type);\
@@ -29,7 +29,7 @@
     }\
 }
 
-#define kakera_CheckNullPointer(ptr)\
+#define kakera_private_CheckNullPointer(ptr)\
 {\
     if (ptr == nullptr)\
     {\
@@ -38,15 +38,6 @@
     }\
 }
 
-#define KAKERA_USING_REFRESH_EVENT extern Uint32 kakera_RefreshEvent;
-
-#define kakera_PushRefreshEvent()\
-{\
-    SDL_Event refresh_event;\
-    SDL_zero(refresh_event);\
-    refresh_event.type = SDL_USEREVENT;\
-    refresh_event.user.type = kakera_RefreshEvent;\
-    SDL_PushEvent(&refresh_event);\
-}
+#define KAKERA_PRIVATE_USING_REFRESH_EVENT extern Uint32 kakera_RefreshEvent;
 
 #endif //!KAKERA_CORE_HEADER

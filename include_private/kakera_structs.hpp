@@ -10,174 +10,177 @@
 
 using namespace std;
 
-template<typename T>
-class Tree
+namespace kakera_private
 {
-public:
-    struct Node
+    template<typename T>
+    class Tree
     {
-        T data;
-        Node* parent;
-        vector<Node*> children;
-    };
-
-    void PreOrderDepthFirstSearch(function<void(Node*)> callback)
-    {
-        if (_root != nullptr)
+    public:
+        struct Node
         {
-            stack<Node*> tempStack;
-            tempStack.emplace(_root);
-            while (!tempStack.empty())
-            {
-                Node* node = tempStack.top();
-                tempStack.pop();
-				callback(node);
-                for (auto iter = node->children.rbegin(); iter != node->children.rend(); iter++)
-                {
-                    tempStack.emplace(*iter);
-                }
-            }
-        }
-    }
+            T data;
+            Node* parent;
+            vector<Node*> children;
+        };
 
-    void BreadthFirstSearch(function<void(Node*)> callback)
-    {
-        if (_root != nullptr)
-        {
-            queue<Node*> tempQueue;
-            tempQueue.emplace(_root);
-            while (!tempQueue.empty())
-            {
-                Node* node = tempQueue.front();
-                tempQueue.pop();
-				callback(node);
-                for (auto iter = node->children.begin(); iter != node->children.end(); iter++)
-                {
-                    tempQueue.emplace(*iter);
-                }
-            }
-        }
-    }
-
-    Node* GetNodeByData(T data)
-    {
-        if (_root != nullptr)
-        {
-            Node* result = nullptr;
-            BreadthFirstSearch([&data, &result](Node* node) {
-                if (node->data == data)
-                {
-                    result = node;
-                }
-            });
-            return result;
-        }
-        return nullptr;
-    }
-
-    Node* GetRoot()
-    {
-        return _root;
-    }
-
-    void Clear()
-    {
-        forward_list<Node*> tempList;
-        BreadthFirstSearch([&tempList](Node* node) {
-            tempList.emplace_front(node);
-        });
-        for (Node* node : tempList)
-        {
-            delete node;
-        }
-    }
-
-    int InsertNode(Node* node, Node* parent = nullptr)
-    {
-        if (node != nullptr)
+        void PreOrderDepthFirstSearch(function<void(Node*)> callback)
         {
             if (_root != nullptr)
             {
-                node->parent = parent;
-                parent->children.emplace_back(node);
-                return 0;
-            }
-            else
-            {
-                if (parent != nullptr)
+                stack<Node*> tempStack;
+                tempStack.emplace(_root);
+                while (!tempStack.empty())
                 {
-                    _root = parent;
-                    node->parent = _root;
-                    _root->children.emplace_back(node);
+                    Node* node = tempStack.top();
+                    tempStack.pop();
+                    callback(node);
+                    for (auto iter = node->children.rbegin(); iter != node->children.rend(); iter++)
+                    {
+                        tempStack.emplace(*iter);
+                    }
+                }
+            }
+        }
+
+        void BreadthFirstSearch(function<void(Node*)> callback)
+        {
+            if (_root != nullptr)
+            {
+                queue<Node*> tempQueue;
+                tempQueue.emplace(_root);
+                while (!tempQueue.empty())
+                {
+                    Node* node = tempQueue.front();
+                    tempQueue.pop();
+                    callback(node);
+                    for (auto iter = node->children.begin(); iter != node->children.end(); iter++)
+                    {
+                        tempQueue.emplace(*iter);
+                    }
+                }
+            }
+        }
+
+        Node* GetNodeByData(T data)
+        {
+            if (_root != nullptr)
+            {
+                Node* result = nullptr;
+                BreadthFirstSearch([&data, &result](Node* node) {
+                    if (node->data == data)
+                    {
+                        result = node;
+                    }
+                });
+                return result;
+            }
+            return nullptr;
+        }
+
+        Node* GetRoot()
+        {
+            return _root;
+        }
+
+        void Clear()
+        {
+            forward_list<Node*> tempList;
+            BreadthFirstSearch([&tempList](Node* node) {
+                tempList.emplace_front(node);
+            });
+            for (Node* node : tempList)
+            {
+                delete node;
+            }
+        }
+
+        int InsertNode(Node* node, Node* parent = nullptr)
+        {
+            if (node != nullptr)
+            {
+                if (_root != nullptr)
+                {
+                    node->parent = parent;
+                    parent->children.emplace_back(node);
                     return 0;
                 }
                 else
                 {
-                    return -1;
+                    if (parent != nullptr)
+                    {
+                        _root = parent;
+                        node->parent = _root;
+                        _root->children.emplace_back(node);
+                        return 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
             }
-        }
-        else
-        {
-            return -1;
-        }
-    }
-
-    int DeleteNode(Node* node)
-    {
-        if (node != nullptr && node != _root)
-        {
-            for (auto iter = node->parent->children.begin(); iter != node->parent->children.end(); iter++)
+            else
             {
-                if (*iter == node)
-                {
-                    node->parent->children.erase(iter);
-                    break;
-                }
+                return -1;
             }
-            node->parent->children.insert(node->parent->children.end(), node->children.begin(), node->children.end());
-            node->children.clear();
-            delete node;
-            return 0;
         }
-        else if (node != nullptr && node == _root)
+
+        int DeleteNode(Node* node)
         {
-            Clear();
-            return 0;
+            if (node != nullptr && node != _root)
+            {
+                for (auto iter = node->parent->children.begin(); iter != node->parent->children.end(); iter++)
+                {
+                    if (*iter == node)
+                    {
+                        node->parent->children.erase(iter);
+                        break;
+                    }
+                }
+                node->parent->children.insert(node->parent->children.end(), node->children.begin(), node->children.end());
+                node->children.clear();
+                delete node;
+                return 0;
+            }
+            else if (node != nullptr && node == _root)
+            {
+                Clear();
+                return 0;
+            }
+            else if (node == nullptr)
+            {
+                return -1;
+            }
+            else
+            {
+                return -1;
+            }
         }
-        else if (node == nullptr)
-        {
-            return -1;
-        }
-        else
-        {
-            return -1;
-        }
-    }
 
-private:
-    Node* _root = nullptr;
-};
+    private:
+        Node* _root = nullptr;
+    };
 
-struct Point
-{
-    int x = 0;
-    int y = 0;
-};
+    struct Point
+    {
+        int x = 0;
+        int y = 0;
+    };
 
-struct Size_2D
-{
-    int w = 0;
-    int h = 0;
-};
+    struct Size_2D
+    {
+        int w = 0;
+        int h = 0;
+    };
 
-using Position_2D = Point;
+    using Position_2D = Point;
 
-struct RenderInfo
-{
-    SDL_Rect* positionAndSize = nullptr;
-    SDL_Rect* cropArea = nullptr;
-    bool isRender = true;
-};
+    struct RenderInfo
+    {
+        SDL_Rect* positionAndSize = nullptr;
+        SDL_Rect* cropArea = nullptr;
+        bool isRender = false;
+    };
+}
 
 #endif //!KAKERA_CORE_STRUCTS

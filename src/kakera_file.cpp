@@ -1,7 +1,3 @@
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif //!_MSC_VER
-
 #include "kakera_file.h"
 #include "kakera_part_implementation.h"
 #include "kakera_tools.hpp"
@@ -16,7 +12,7 @@ using namespace std;
 kakera_File * kakera_ReadFile(const char * filepath)
 {
     FILE* file = fopen(filepath, "rb");
-    kakera_CheckNullPointer(file);
+    kakera_private_CheckNullPointer(file);
     fseek(file, 0, SEEK_END);
     int size = ftell(file);
     char* data = new char[size];
@@ -36,21 +32,22 @@ kakera_File * kakera_CreateNewFile(int size, char * data)
 
 const char * const kakera_GetRawFileData(kakera_File * file)
 {
-    kakera_CheckNullPointer(file);
+    kakera_private_CheckNullPointer(file);
     return file->data;
 }
 
 int kakera_GetRawFileSize(kakera_File * file)
 {
-    kakera_CheckNullPointer(file);
+    kakera_private_CheckNullPointer(file);
     return file->size;
 }
 
-void kakera_DestroyFile(kakera_File * file)
+void kakera_DestroyFile(kakera_File ** file)
 {
-    kakera_CheckNullPointer(file);
-    delete file->data;
-    delete file;
+    kakera_private_CheckNullPointer(*file);
+    delete (*file)->data;
+    delete *file;
+    *file = nullptr;
 }
 
 class kakera_XMLSaveAsString : public pugi::xml_writer
@@ -93,7 +90,7 @@ kakera_FilePackage * kakera_LoadFilePackage(const char* path)
     kakera_FilePackage* package = new kakera_FilePackage;
     package->path = path;
     package->data = fopen(path, "rb+");   
-    kakera_CheckNullPointer(package->data);
+    kakera_private_CheckNullPointer(package->data);
     char* rawXMLIndex = new char[sizeof(char) * 4096];
     fread(rawXMLIndex, sizeof(char), sizeof(char) * 4096, package->data);
     package->index.load_string(rawXMLIndex);
@@ -103,15 +100,15 @@ kakera_FilePackage * kakera_LoadFilePackage(const char* path)
 
 void kakera_DestroyFilePackage(kakera_FilePackage * package)
 {
-    kakera_CheckNullPointer(package);
+    kakera_private_CheckNullPointer(package);
     fclose(package->data);
     delete package;
 }
 
 kakera_File * kakera_ReadFileFromPackage(kakera_FilePackage * package, const char * path)
 {
-    kakera_CheckNullPointer(package);
-    auto result = splitString(path, '/');
+    kakera_private_CheckNullPointer(package);
+    auto result = kakera_private::splitString(path, '/');
     string packagePath = "/";
     if (result.size() > 2)
     {
@@ -148,8 +145,8 @@ kakera_File * kakera_ReadFileFromPackage(kakera_FilePackage * package, const cha
 
 void kakera_AddFileToPackage(kakera_FilePackage * package, kakera_File * file, const char * path)
 {
-    kakera_CheckNullPointer(package);
-    auto result = splitString(path, '/');
+    kakera_private_CheckNullPointer(package);
+    auto result = kakera_private::splitString(path, '/');
     int offset = 0;
     string packagePath = "/";
     kakera_File* finalFile;
@@ -201,12 +198,12 @@ void kakera_AddFileToPackage(kakera_FilePackage * package, kakera_File * file, c
 
 void kakera_SetPackageEncryptMethod(kakera_FilePackage * package, kakera_CryptMethod method)
 {
-    kakera_CheckNullPointer(package);
+    kakera_private_CheckNullPointer(package);
     package->encrypt = method;
 }
 
 void kakera_SetPackageDecryptMethod(kakera_FilePackage * package, kakera_CryptMethod method)
 {
-    kakera_CheckNullPointer(package);
+    kakera_private_CheckNullPointer(package);
     package->decrypt = method;
 }

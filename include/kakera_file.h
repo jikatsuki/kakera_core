@@ -23,7 +23,7 @@ extern KAKERA_EXPORT void                   kakera_AddFileToPackage(kakera_FileP
 extern KAKERA_EXPORT void                   kakera_SetPackageEncryptMethod(kakera_FilePackage* package, kakera_CryptMethod method);
 extern KAKERA_EXPORT void                   kakera_SetPackageDecryptMethod(kakera_FilePackage* package, kakera_CryptMethod method);
 
-extern KAKERA_EXPORT KAKERA_DEPRECATED void kakera_DestroyFile(kakera_File* file);
+extern KAKERA_EXPORT KAKERA_DEPRECATED void kakera_DestroyFile(kakera_File** file);
 
 #ifdef __cplusplus
 }
