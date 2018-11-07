@@ -28,6 +28,8 @@ kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int
     kakera_Window* result = new kakera_Window;
     result->window = SDL_CreateWindow(title, x, y, w, h, flags);
     result->renderer = SDL_CreateRenderer(result->window, -1, SDL_RENDERER_ACCELERATED);
+    //SDL_Surface* surface = SDL_GetWindowSurface(result->window);
+    //result->renderer = SDL_CreateSoftwareRenderer(surface);
     SDL_SetRenderDrawColor(result->renderer, 255, 255, 255, 255);
     result->FPSSem = SDL_CreateSemaphore(1);
     result->isQuit = false;
@@ -159,6 +161,12 @@ kakera_Event * kakera_GetWindowEvent(kakera_Window * window)
     return &window->event;
 }
 
+void kakera_SetUsingDirtyRectRender(kakera_Window * window, bool isUse)
+{
+    kakera_private_CheckNullPointer(window);
+    window->usingDirtyRect = isUse;
+}
+
 void kakera_private_ClearRenderRect(kakera_Window * window, SDL_Rect* rect)
 {
     if (rect == nullptr)
@@ -268,6 +276,66 @@ void kakera_private_RefreshAll(kakera_Window * window)
                     NULL,
                     SDL_FLIP_NONE
                 );
+            }
+        }
+    }
+    SDL_RenderPresent(window->renderer);
+}
+
+void kakera_private_RefreshRect(kakera_Window * window, SDL_Rect* refreshArea)
+{
+    kakera_private_ClearRenderRect(window, refreshArea);
+    if (window->activeScene != nullptr)
+    {
+        forward_list<kakera_Element*> elementList;
+        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+            elementList.emplace_front(node->data);
+        });
+        elementList.reverse();
+        for (auto element : elementList)
+        {
+            SDL_Rect elementPositionAndSize = {
+                element->position.x,
+                element->position.y,
+                element->displaySize.w,
+                element->displaySize.h
+            };
+            if (kakera_private::Is2RectIntersected(refreshArea, &elementPositionAndSize))
+            {
+                SDL_Rect* dirtyArea = kakera_private::Get2RectIntersection(refreshArea, &elementPositionAndSize);
+                SDL_Rect cropArea;
+                if (dirtyArea->w < element->displaySize.w || dirtyArea->h < element->displaySize.h)
+                {
+                    cropArea = {
+                        static_cast<int>((static_cast<float>(element->realSize.w) / static_cast<float>(element->displaySize.w)) * (element->displaySize.w - dirtyArea->w)),
+                        static_cast<int>((static_cast<float>(element->realSize.h) / static_cast<float>(element->displaySize.h)) * (element->displaySize.h - dirtyArea->h)),
+                        static_cast<int>((static_cast<float>(dirtyArea->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w),
+                        static_cast<int>((static_cast<float>(dirtyArea->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h)
+                    };
+                }
+                else
+                {
+                    cropArea = {
+                        0,
+                        0,
+                        element->realSize.w,
+                        element->realSize.h
+                    };
+                }
+                
+                if (element->renderInfo.isRender && element->texture != nullptr)
+                {
+                    SDL_RenderCopyEx(
+                        window->renderer,
+                        element->texture,
+                        &cropArea,
+                        dirtyArea,
+                        element->rotateAngle,
+                        NULL,
+                        SDL_FLIP_NONE
+                    );
+                }
+                delete dirtyArea;
             }
         }
     }
@@ -484,7 +552,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                 }
                 else
                 {
-
+                    kakera_private_RefreshRect(window, reinterpret_cast<SDL_Rect*>(event->user.data1));
                 }
             }
         }

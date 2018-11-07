@@ -30,6 +30,7 @@ struct kakera_Window
     kakera_Event event;
     mutex eventLock;
     void* userdata = nullptr;
+    bool usingDirtyRect = false;
 };
 
 struct kakera_Scene
@@ -65,6 +66,7 @@ struct kakera_Element
     bool isReceiveInput = false;
     string receivedInput;
     string receivedEditingInput;
+    mutex elementLock;
 };
 
 struct kakera_File

@@ -17,7 +17,7 @@ vector<string> kakera_private::splitString(const string& str, const char separat
     return result;
 }
 
-int kakera_private::FastSqrt(float number)
+float kakera_private::FastSqrt(float number)
 {
     //Thanks for John D. Carmack II & Chris Lomont
     long i;
@@ -31,7 +31,7 @@ int kakera_private::FastSqrt(float number)
     y = *(float*)&i;
     y = y * (f - (x * y * y));
     y = y * (f - (x * y * y));
-    return int(number * y + 1);
+    return number * y;
 }
 
 void kakera_private::PushRefreshEvent()
@@ -44,7 +44,7 @@ void kakera_private::PushRefreshEvent()
     SDL_PushEvent(&refresh_event);
 }
 
-void kakera_private::PushRefreshEvent(RefreshType type, RefreshInfo info)
+void kakera_private::PushRefreshEvent(RefreshType type, RefreshInfo& info)
 {
     SDL_Event refresh_event;
     SDL_zero(refresh_event);
@@ -55,14 +55,46 @@ void kakera_private::PushRefreshEvent(RefreshType type, RefreshInfo info)
     {
     case RefreshType::Refresh_Moved:
     {
+        int x1_1 = info.moved.oldPosition.x, y1_1 = info.moved.oldPosition.y;
+        int x2_2 = info.moved.newPosition.x + info.moved.newPosition.w, y2_2 = info.moved.newPosition.y + info.moved.newPosition.h;
+        refreshArea->x = x1_1;
+        refreshArea->y = y1_1;
+        if (x2_2 - x1_1 < info.moved.oldPosition.w)
+        {
+            refreshArea->w = info.moved.oldPosition.w;
+        }
+        else
+        {
+            refreshArea->w = x2_2 - x1_1;
+        }
+
+        if (y2_2 - y1_1 < info.moved.oldPosition.h)
+        {
+            refreshArea->h = info.moved.oldPosition.h;
+        }
+        else
+        {
+            refreshArea->h = y2_2 - y1_1;
+        }
         break;
     }
     case RefreshType::Refresh_Unmoved:
     {
+        refreshArea->x = info.unmoved.refreshArea.x;
+        refreshArea->y = info.unmoved.refreshArea.y;
+        refreshArea->w = info.unmoved.refreshArea.w;
+        refreshArea->h = info.unmoved.refreshArea.h;
         break;
     }
     case RefreshType::Refresh_Rotate:
     {
+        int center_x = info.rotate.positionAndSize.x + static_cast<float>(info.rotate.positionAndSize.w) / 2.0f;
+        int center_y = info.rotate.positionAndSize.y + static_cast<float>(info.rotate.positionAndSize.h) / 2.0f;
+        float d = kakera_private::FastSqrt(info.rotate.positionAndSize.w * info.rotate.positionAndSize.w + info.rotate.positionAndSize.h * info.rotate.positionAndSize.h);
+        refreshArea->x = center_x - d / 2.0f <= 0 ? 0 : static_cast<int>(center_x - d / 2.0f);
+        refreshArea->y = center_y - d / 2.0f <= 0 ? 0 : static_cast<int>(center_y - d / 2.0f);
+        refreshArea->w = static_cast<int>(d);
+        refreshArea->h = static_cast<int>(d);
         break;
     }
     }

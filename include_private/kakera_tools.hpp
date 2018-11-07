@@ -59,11 +59,11 @@ namespace kakera_private
         Refresh_Rotate
     };
 
-    int FastSqrt(float number);
+    float FastSqrt(float number);
 
     void PushRefreshEvent();
 
-    void PushRefreshEvent(RefreshType type, RefreshInfo info);
+    void PushRefreshEvent(RefreshType type, RefreshInfo& info);
 
     bool Is2RectIntersected(SDL_Rect* rect1, SDL_Rect* rect2);
 
