@@ -31,6 +31,7 @@ struct kakera_Window
     mutex eventLock;
     void* userdata = nullptr;
     bool usingDirtyRect = false;
+    bool minimized = false;
 };
 
 struct kakera_Scene

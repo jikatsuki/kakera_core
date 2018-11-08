@@ -26,7 +26,7 @@ unsigned int kakera_GetWindowPosCentered()
 kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int h, int flags)
 {
     kakera_Window* result = new kakera_Window;
-    result->window = SDL_CreateWindow(title, x, y, w, h, flags);
+    result->window = SDL_CreateWindow(title, x, y, w, h, (flags | SDL_WINDOW_ALLOW_HIGHDPI));
     result->renderer = SDL_CreateRenderer(result->window, -1, SDL_RENDERER_ACCELERATED);
     //SDL_Surface* surface = SDL_GetWindowSurface(result->window);
     //result->renderer = SDL_CreateSoftwareRenderer(surface);
@@ -540,11 +540,40 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
         }
         break;
     }
+    case SDL_WINDOWEVENT:
+    {
+        switch (event->window.event)
+        {
+        case SDL_WINDOWEVENT_RESIZED:
+        {
+            if (window->activeScene != nullptr)
+            {
+                kakera_private_RefreshAll(window);
+            }
+            break;
+        }
+        case SDL_WINDOWEVENT_MINIMIZED:
+        {
+            window->minimized = true;
+            kakera_private_RefreshAll(window);
+            break;
+        }
+        case SDL_WINDOWEVENT_RESTORED:
+        {
+            window->minimized = false;
+            kakera_private_RefreshAll(window);
+            break;
+        }
+        default:
+            break;
+        }
+        break;
+    }
     case SDL_USEREVENT:
     {
         if (window != nullptr)
         {            
-            if (event->user.type == kakera_RefreshEvent)
+            if (event->user.type == kakera_RefreshEvent && !window->minimized)
             {                
                 if (event->user.data1 == nullptr)
                 {
