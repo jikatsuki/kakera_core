@@ -8,6 +8,7 @@
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+#include <type_traits>
 
 using namespace std;
 
@@ -68,6 +69,35 @@ namespace kakera_private
     bool Is2RectIntersected(SDL_Rect* rect1, SDL_Rect* rect2);
 
     SDL_Rect* Get2RectIntersection(SDL_Rect* rect1, SDL_Rect* rect2);
+
+    template<typename T>
+    void CheckNullPointer(T ptr)
+    {
+        if (is_pointer<T>::value)
+        {
+            if (ptr == nullptr)
+            {
+                fprintf(stderr, "NullPointerException");
+                abort();
+            }
+        }
+    }
+
+    template<typename Target, typename Type>
+    void RunCallback(Target target_ptr, Type type)
+    {
+        auto iter = target_ptr->callbackList.find(type);
+        if (iter != target_ptr->callbackList.end())
+        {
+            iter->second(target_ptr);
+        }
+    }
+
+    template<typename Target, typename Type, typename Lock>
+    void RunCallbackAsync(Target target_ptr, Type type, Lock lock)
+    {
+        RunCallback(target_ptr, type);
+    }
 }
 
 #endif // !KAKERA_CORE_TOOLS
