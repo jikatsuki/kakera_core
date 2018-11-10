@@ -7,7 +7,6 @@
 #include <stack>
 #include <queue>
 #include <type_traits>
-#include <atomic>
 
 using namespace std;
 

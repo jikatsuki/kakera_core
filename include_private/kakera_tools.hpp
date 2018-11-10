@@ -60,8 +60,6 @@ namespace kakera_private
         Refresh_Rotate
     };
 
-    float FastSqrt(float number);
-
     void PushRefreshEvent();
 
     void PushRefreshEvent(RefreshType type, RefreshInfo& info);
@@ -93,11 +91,17 @@ namespace kakera_private
         }
     }
 
-    template<typename Target, typename Type, typename Lock>
+    /*template<typename Target, typename Type, typename Lock>
     void RunCallbackAsync(Target target_ptr, Type type, Lock lock)
     {
-        RunCallback(target_ptr, type);
-    }
+        auto iter = target_ptr->callbackList.find(type);
+        if (iter != target_ptr->callbackList.end())
+        {
+            packaged_task<void(Target)> task(iter->second);
+            thread th(move(task), target_ptr);
+            th.detach();
+        }
+    }*/
 }
 
 #endif // !KAKERA_CORE_TOOLS

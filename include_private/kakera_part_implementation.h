@@ -13,7 +13,6 @@
 #include <string>
 #include <cstdlib>
 #include "pugixml/pugixml.hpp"
-#include <mutex>
 
 using namespace std;
 using namespace kakera_private;
@@ -28,7 +27,6 @@ struct kakera_Window
     kakera_Scene* activeScene = nullptr;
     kakera_WindowFPS FPS = KAKERA_WINDOW_30FPS;
     kakera_Event event;
-    mutex eventLock;
     void* userdata = nullptr;
     bool usingDirtyRect = false;
 };
@@ -66,13 +64,6 @@ struct kakera_Element
     bool isReceiveInput = false;
     string receivedInput;
     string receivedEditingInput;
-    mutex elementLock;
-};
-
-struct kakera_File
-{
-    int size;
-    char* data;
 };
 
 struct kakera_FilePackage

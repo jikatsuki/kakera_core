@@ -17,23 +17,6 @@ vector<string> kakera_private::splitString(const string& str, const char separat
     return result;
 }
 
-float kakera_private::FastSqrt(float number)
-{
-    //Thanks for John D. Carmack II & Chris Lomont
-    long i;
-    float x, y;
-    const float f = 1.5f;
-
-    x = number * 0.5f;
-    y = number;
-    i = *(long*)&y;
-    i = 0x5f375a86 - (i >> 1);
-    y = *(float*)&i;
-    y = y * (f - (x * y * y));
-    y = y * (f - (x * y * y));
-    return number * y;
-}
-
 void kakera_private::PushRefreshEvent()
 {
     SDL_Event refresh_event;
@@ -90,7 +73,7 @@ void kakera_private::PushRefreshEvent(RefreshType type, RefreshInfo& info)
     {
         int center_x = info.rotate.positionAndSize.x + static_cast<float>(info.rotate.positionAndSize.w) / 2.0f;
         int center_y = info.rotate.positionAndSize.y + static_cast<float>(info.rotate.positionAndSize.h) / 2.0f;
-        float d = kakera_private::FastSqrt(info.rotate.positionAndSize.w * info.rotate.positionAndSize.w + info.rotate.positionAndSize.h * info.rotate.positionAndSize.h);
+        float d = sqrt(info.rotate.positionAndSize.w * info.rotate.positionAndSize.w + info.rotate.positionAndSize.h * info.rotate.positionAndSize.h);
         refreshArea->x = center_x - d / 2.0f <= 0 ? 0 : static_cast<int>(center_x - d / 2.0f);
         refreshArea->y = center_y - d / 2.0f <= 0 ? 0 : static_cast<int>(center_y - d / 2.0f);
         refreshArea->w = static_cast<int>(d);

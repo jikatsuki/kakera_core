@@ -137,12 +137,11 @@ void kakera_StartScene(kakera_Scene* scene, void* userdata)
     kakera_private::CheckNullPointer(scene);
     kakera_private::CheckNullPointer(scene->window);
     scene->userdata = userdata;
-    auto lock = &scene->window->eventLock;
     if (scene->window->activeScene != nullptr)
     {
-        kakera_private::RunCallbackAsync(scene->window->activeScene, KAKERA_SCENE_ON_STOP, lock);
+        kakera_private::RunCallback(scene->window->activeScene, KAKERA_SCENE_ON_STOP);
     }
     scene->window->activeScene = scene;
-    kakera_private::RunCallbackAsync(scene, KAKERA_SCENE_ON_START, lock);
+    kakera_private::RunCallback(scene, KAKERA_SCENE_ON_START);
     kakera_private::PushRefreshEvent();
 }
