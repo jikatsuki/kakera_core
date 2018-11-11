@@ -9,6 +9,7 @@
 #include <cmath>
 #include <algorithm>
 #include <type_traits>
+#include <map>
 
 using namespace std;
 
@@ -90,18 +91,6 @@ namespace kakera_private
             iter->second(target_ptr);
         }
     }
-
-    /*template<typename Target, typename Type, typename Lock>
-    void RunCallbackAsync(Target target_ptr, Type type, Lock lock)
-    {
-        auto iter = target_ptr->callbackList.find(type);
-        if (iter != target_ptr->callbackList.end())
-        {
-            packaged_task<void(Target)> task(iter->second);
-            thread th(move(task), target_ptr);
-            th.detach();
-        }
-    }*/
 }
 
 #endif // !KAKERA_CORE_TOOLS

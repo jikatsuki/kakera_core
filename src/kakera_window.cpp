@@ -29,8 +29,6 @@ kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int
     kakera_Window* result = new kakera_Window;
     result->window = SDL_CreateWindow(title, x, y, w, h, flags);
     result->renderer = SDL_CreateRenderer(result->window, -1, SDL_RENDERER_ACCELERATED);
-    //SDL_Surface* surface = SDL_GetWindowSurface(result->window);
-    //result->renderer = SDL_CreateSoftwareRenderer(surface);
     SDL_SetRenderDrawColor(result->renderer, 255, 255, 255, 255);
     result->FPSSem = SDL_CreateSemaphore(1);
     result->isQuit = false;
@@ -42,7 +40,6 @@ int kakera_DestroyWindow(kakera_Window ** window)
     kakera_private::CheckNullPointer(*window);
     SDL_DestroySemaphore((*window)->FPSSem);
     SDL_DestroyRenderer((*window)->renderer);
-    cout << SDL_GetError() << endl;
     SDL_DestroyWindow((*window)->window);
     delete *window;
     (*window) = nullptr;
@@ -348,221 +345,239 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
 {
     kakera_Window* window = static_cast<kakera_Window*>(userdata);
 
-    switch (event->type)
+    if (event->window.windowID == SDL_GetWindowID(window->window))
     {
-    case SDL_QUIT:
-        window->isQuit = true;
-        break;
-    case SDL_MOUSEMOTION:
-    {
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-        window->event.mouse.pointer.x = mouseX;
-        window->event.mouse.pointer.y = mouseY;
-        forward_list<kakera_Element*> elementList;
-        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-            elementList.emplace_front(node->data);
-        });
-        for (auto element : elementList)
+        switch (event->type)
         {
-            if (element->isResponseEvent)
+        case SDL_QUIT:            
+            window->isQuit = true;
+            break;
+        case SDL_WINDOWEVENT:
+        {
+            switch (event->window.event)
             {
-                if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize))
+            case SDL_WINDOWEVENT_CLOSE:
+            {
+                window->isQuit = true;
+                break;
+            }
+            default:
+
+                break;
+            }            
+        }
+        break;
+        case SDL_MOUSEMOTION:
+        {
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            window->event.mouse.pointer.x = mouseX;
+            window->event.mouse.pointer.y = mouseY;
+            forward_list<kakera_Element*> elementList;
+            window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+                elementList.emplace_front(node->data);
+            });
+            for (auto element : elementList)
+            {
+                if (element->isResponseEvent)
                 {
-                    if (!element->isMouseEntered)
+                    if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize))
                     {
-                        if (window->activeScene->mouseEnteredElement != nullptr)
+                        if (!element->isMouseEntered)
                         {
-                            window->activeScene->mouseEnteredElement->isMouseEntered = false;
-                            kakera_private::RunCallback(window->activeScene->mouseEnteredElement, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
+                            if (window->activeScene->mouseEnteredElement != nullptr)
+                            {
+                                window->activeScene->mouseEnteredElement->isMouseEntered = false;
+                                kakera_private::RunCallback(window->activeScene->mouseEnteredElement, KAKERA_ELEMENT_ON_MOUSE_LEAVE);
+                            }
+                            element->isMouseEntered = true;
+                            kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_ENTER);
+                            window->activeScene->mouseEnteredElement = element;
                         }
-                        element->isMouseEntered = true;
-                        kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_ENTER);
-                        window->activeScene->mouseEnteredElement = element;
+                        kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_MOVE);
+                        break;
                     }
-                    kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_MOVE);
-                    break;
-                }               
-            }
+                }
+            }            
         }
         break;
-    }
-    case SDL_MOUSEBUTTONDOWN:
-    {
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-        window->event.mouse.pointer.x = mouseX;
-        window->event.mouse.pointer.y = mouseY;
-        switch (event->button.button)
+        case SDL_MOUSEBUTTONDOWN:
         {
-        case SDL_BUTTON_LEFT:
-            window->event.mouse.button = KAKERA_MOUSE_LEFT_BUTTON;
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            window->event.mouse.pointer.x = mouseX;
+            window->event.mouse.pointer.y = mouseY;
+            switch (event->button.button)
+            {
+            case SDL_BUTTON_LEFT:
+                window->event.mouse.button = KAKERA_MOUSE_LEFT_BUTTON;
+                break;
+            case SDL_BUTTON_MIDDLE:
+                window->event.mouse.button = KAKERA_MOUSE_MIDDLE_BUTTON;
+                break;
+            case SDL_BUTTON_RIGHT:
+                window->event.mouse.button = KAKERA_MOUSE_RIGHT_BUTTON;
+                break;
+            default:
+                break;
+            }
+            forward_list<kakera_Element*> elementList;
+            window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+                elementList.emplace_front(node->data);
+            });
+            for (auto element : elementList)
+            {
+                if (element->isResponseEvent)
+                {
+                    if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
+                        (event->button.button == SDL_BUTTON_LEFT ||
+                            event->button.button == SDL_BUTTON_RIGHT ||
+                            event->button.button == SDL_BUTTON_MIDDLE
+                            ) &&
+                        event->button.state == SDL_PRESSED)
+                    {
+                        kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_DOWN);
+                        break;
+                    }
+                }
+            }
             break;
-        case SDL_BUTTON_MIDDLE:
-            window->event.mouse.button = KAKERA_MOUSE_MIDDLE_BUTTON;
+        }
+        case SDL_MOUSEBUTTONUP:
+        {
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            window->event.mouse.pointer.x = mouseX;
+            window->event.mouse.pointer.y = mouseY;
+            switch (event->button.button)
+            {
+            case SDL_BUTTON_LEFT:
+                window->event.mouse.button = KAKERA_MOUSE_LEFT_BUTTON;
+                break;
+            case SDL_BUTTON_MIDDLE:
+                window->event.mouse.button = KAKERA_MOUSE_MIDDLE_BUTTON;
+                break;
+            case SDL_BUTTON_RIGHT:
+                window->event.mouse.button = KAKERA_MOUSE_RIGHT_BUTTON;
+                break;
+            default:
+                break;
+            }
+            forward_list<kakera_Element*> elementList;
+            window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
+                elementList.emplace_front(node->data);
+            });
+            for (auto element : elementList)
+            {
+                if (element->isResponseEvent)
+                {
+                    if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
+                        (event->button.button == SDL_BUTTON_LEFT ||
+                            event->button.button == SDL_BUTTON_RIGHT ||
+                            event->button.button == SDL_BUTTON_MIDDLE
+                            ) &&
+                        event->button.state == SDL_RELEASED)
+                    {
+                        if (event->button.clicks == 2)
+                        {
+                            kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_DOUBLE_CLICK);
+                        }
+                        else if (event->button.clicks == 1)
+                        {
+                            kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
+                            //kakera_private_RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
+                        }
+                        kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_UP);
+                        kakera_SetFocusElement(window->activeScene, element);
+                        break;
+                    }
+                }
+            }
             break;
-        case SDL_BUTTON_RIGHT:
-            window->event.mouse.button = KAKERA_MOUSE_RIGHT_BUTTON;
+        }
+        case SDL_MOUSEWHEEL:
+        {
+            if (window->activeScene->focusElement != nullptr &&
+                window->activeScene->focusElement->isResponseEvent)
+            {
+                window->event.mouse.wheel.x = event->wheel.x;
+                window->event.mouse.wheel.y = event->wheel.y;
+                kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL);
+            }
             break;
+        }
+        case SDL_KEYDOWN:
+        {
+            if (window->activeScene->focusElement != nullptr &&
+                window->activeScene->focusElement->isResponseEvent)
+            {
+                window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
+                kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_DOWN);
+            }
+            break;
+        }
+        case SDL_KEYUP:
+        {
+            if (window->activeScene->focusElement != nullptr &&
+                window->activeScene->focusElement->isResponseEvent)
+            {
+                window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
+                kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_UP);
+            }
+            break;
+        }
+        case SDL_TEXTEDITING:
+        {
+            if (window->activeScene->focusElement != nullptr &&
+                window->activeScene->focusElement->isResponseEvent &&
+                window->activeScene->focusElement->isReceiveInput)
+            {
+                window->activeScene->focusElement->receivedEditingInput = string(event->edit.text);
+                auto inputRect = new SDL_Rect({
+                        window->activeScene->focusElement->renderInfo.positionAndSize->x + window->activeScene->focusElement->renderInfo.positionAndSize->w + event->edit.length,
+                        window->activeScene->focusElement->renderInfo.positionAndSize->y + window->activeScene->focusElement->renderInfo.positionAndSize->h / 2,
+                        0,
+                        0
+                    });
+                SDL_SetTextInputRect(inputRect);
+                delete inputRect;
+                kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);
+            }
+            break;
+        }
+        case SDL_TEXTINPUT:
+        {
+            if (window->activeScene->focusElement != nullptr &&
+                window->activeScene->focusElement->isResponseEvent &&
+                window->activeScene->focusElement->isReceiveInput)
+            {
+                window->activeScene->focusElement->receivedInput += string(event->text.text);
+                kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);
+            }
+            break;
+        }
+        case SDL_USEREVENT:
+        {
+            if (window != nullptr)
+            {
+                if (event->user.type == kakera_RefreshEvent)
+                {
+                    if (event->user.data1 == nullptr)
+                    {
+                        //kakera_private_RefreshAll(window);
+                    }
+                    else
+                    {
+                        //kakera_private_RefreshRect(window, reinterpret_cast<SDL_Rect*>(event->user.data1));
+                    }
+                }
+            }
+            break;
+        }
         default:
             break;
         }
-        forward_list<kakera_Element*> elementList;
-        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-            elementList.emplace_front(node->data);
-        });
-        for (auto element : elementList)
-        {
-            if (element->isResponseEvent)
-            {
-                if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
-                        (event->button.button == SDL_BUTTON_LEFT  ||
-                         event->button.button == SDL_BUTTON_RIGHT ||
-                         event->button.button == SDL_BUTTON_MIDDLE
-                        ) &&
-                    event->button.state == SDL_PRESSED)
-                {
-                    kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_DOWN);
-                    break;
-                }
-            }
-        }
-        break;
     }
-    case SDL_MOUSEBUTTONUP:
-    {
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-        window->event.mouse.pointer.x = mouseX;
-        window->event.mouse.pointer.y = mouseY;
-        switch (event->button.button)
-        {
-        case SDL_BUTTON_LEFT:
-            window->event.mouse.button = KAKERA_MOUSE_LEFT_BUTTON;
-            break;
-        case SDL_BUTTON_MIDDLE:
-            window->event.mouse.button = KAKERA_MOUSE_MIDDLE_BUTTON;
-            break;
-        case SDL_BUTTON_RIGHT:
-            window->event.mouse.button = KAKERA_MOUSE_RIGHT_BUTTON;
-            break;
-        default:
-            break;
-        }
-        forward_list<kakera_Element*> elementList;
-        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-            elementList.emplace_front(node->data);
-        });
-        for (auto element : elementList)
-        {
-            if (element->isResponseEvent)
-            {
-                if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
-                        (event->button.button == SDL_BUTTON_LEFT  ||
-                         event->button.button == SDL_BUTTON_RIGHT ||
-                         event->button.button == SDL_BUTTON_MIDDLE
-                        ) &&
-                    event->button.state == SDL_RELEASED)
-                {
-                    if (event->button.clicks == 2)
-                    {
-                        kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_DOUBLE_CLICK);
-                    }
-                    else if (event->button.clicks == 1)
-                    {
-                        kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
-                        //kakera_private_RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
-                    }
-                    kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_UP);
-                    kakera_SetFocusElement(window->activeScene, element);
-                    break;
-                }
-            }
-        }
-        break;
-    }
-    case SDL_MOUSEWHEEL:
-    {
-        if (window->activeScene->focusElement != nullptr &&
-            window->activeScene->focusElement->isResponseEvent)
-        {
-            window->event.mouse.wheel.x = event->wheel.x;
-            window->event.mouse.wheel.y = event->wheel.y;
-            kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL);
-        }
-        break;
-    }
-    case SDL_KEYDOWN:
-    {
-        if (window->activeScene->focusElement != nullptr &&
-            window->activeScene->focusElement->isResponseEvent)
-        {
-            window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
-            kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_DOWN);
-        }
-        break;
-    }
-    case SDL_KEYUP:
-    {
-        if (window->activeScene->focusElement != nullptr &&
-            window->activeScene->focusElement->isResponseEvent)
-        {
-            window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
-            kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_UP);
-        }
-        break;
-    }
-    case SDL_TEXTEDITING:
-    {
-        if (window->activeScene->focusElement != nullptr &&
-            window->activeScene->focusElement->isResponseEvent &&
-            window->activeScene->focusElement->isReceiveInput)
-        {            
-            window->activeScene->focusElement->receivedEditingInput = string(event->edit.text);
-            auto inputRect = new SDL_Rect({ 
-                    window->activeScene->focusElement->renderInfo.positionAndSize->x + window->activeScene->focusElement->renderInfo.positionAndSize->w + event->edit.length,
-                    window->activeScene->focusElement->renderInfo.positionAndSize->y + window->activeScene->focusElement->renderInfo.positionAndSize->h / 2,
-                    0,
-                    0
-                });
-            SDL_SetTextInputRect(inputRect);
-            delete inputRect;
-            kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);            
-        }
-        break;
-    }
-    case SDL_TEXTINPUT:
-    {
-        if (window->activeScene->focusElement != nullptr &&
-            window->activeScene->focusElement->isResponseEvent &&
-            window->activeScene->focusElement->isReceiveInput)
-        {           
-            window->activeScene->focusElement->receivedInput += string(event->text.text);                        
-            kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);
-        }
-        break;
-    }
-    case SDL_USEREVENT:
-    {
-        if (window != nullptr)
-        {            
-            if (event->user.type == kakera_RefreshEvent)
-            {                
-                if (event->user.data1 == nullptr)
-                {
-                    //kakera_private_RefreshAll(window);
-                }
-                else
-                {
-                    //kakera_private_RefreshRect(window, reinterpret_cast<SDL_Rect*>(event->user.data1));
-                }
-            }
-        }
-        break;
-    }
-    default:
-        break;
-    }    
     
     return 0;
 }
@@ -579,7 +594,8 @@ void kakera_StartWindow(kakera_Window ** window, void* userdata)
     kakera_private::CheckNullPointer(*window);
     (*window)->userdata = userdata;
     SDL_Event event;
-    SDL_SetEventFilter(kakera_private_EventFilter, *window);
+    //SDL_SetEventFilter(kakera_private_EventFilter, *window);
+    SDL_AddEventWatch(kakera_private_EventFilter, *window);
     SDL_StartTextInput();
     kakera_private_RefreshAll(*window);
     while (!(*window)->isQuit)
@@ -604,6 +620,7 @@ void kakera_StartWindow(kakera_Window ** window, void* userdata)
     }
     if ((*window)->isQuit)
     {
+        SDL_DelEventWatch(kakera_private_EventFilter, *window);
         SDL_StopTextInput();
         kakera_DestroyWindow(window);
         return;
