@@ -54,6 +54,7 @@ struct kakera_Element
     Size_2D displaySize = { 0, 0 };
     Size_2D realSize = { 0, 0 };
     bool resizeFlag = false;
+    bool isRotating = false;
     double rotateAngle = 0.0;
     int SDLFormat;
     int SDLAccess;

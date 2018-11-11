@@ -46,7 +46,7 @@ extern KAKERA_EXPORT void               kakera_SetIsElementResponseEvent(kakera_
 extern KAKERA_EXPORT void               kakera_BindEventToElement(kakera_Element* element, kakera_ElementEvents event, kakera_ElementEventCallback callback);
 extern KAKERA_EXPORT kakera_Scene*      kakera_GetSceneFromElement(kakera_Element* element);
 extern KAKERA_EXPORT char*              kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b);
-extern KAKERA_EXPORT char*              kakera_GetPixelsFromPicture(kakera_File * picture);
+extern KAKERA_EXPORT char*              kakera_GetPixelsFromPicture(kakera_File * picture, kakera_Rectangle* clipArea);
 extern KAKERA_EXPORT char*              kakera_GetPixelsFromText(kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text, int* finalW, int* finalH);
 extern KAKERA_EXPORT void               kakera_SetElementContent(kakera_Element* element, void* pixels);
 extern KAKERA_EXPORT void               kakera_SetElementContentByYUVPixels(kakera_Element* element, void* YPixels, void* UPixels, void* VPixels, int YPitch, int UPitch, int VPitch);

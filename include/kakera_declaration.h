@@ -9,11 +9,16 @@ extern "C"
 typedef struct kakera_Window;
 typedef struct kakera_Scene;
 typedef struct kakera_Element;
+typedef struct kakera_FilePackage;
+
 typedef struct {
     int size;
     char* data;
 } kakera_File;
-typedef struct kakera_FilePackage;
+
+typedef struct {
+    int x, y, w, h;
+} kakera_Rectangle;
 
 #ifdef __cplusplus
 }

@@ -3,6 +3,7 @@
 
 #include "kakera_header.h"
 #include "kakera_structs.hpp"
+#include "kakera_declaration.h"
 #include <string>
 #include <vector>
 #include <sstream>
@@ -10,6 +11,7 @@
 #include <algorithm>
 #include <type_traits>
 #include <map>
+#include <iostream>
 
 using namespace std;
 
@@ -91,6 +93,10 @@ namespace kakera_private
             iter->second(target_ptr);
         }
     }
+
+    void printSDLRect(const SDL_Rect& rect);
+
+    SDL_Rect* ConvertRect(const kakera_Rectangle* rect);
 }
 
 #endif // !KAKERA_CORE_TOOLS

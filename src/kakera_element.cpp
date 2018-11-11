@@ -224,16 +224,32 @@ char * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
     return result;
 }
 
-char * kakera_GetPixelsFromPicture(kakera_File * picture)
+char * kakera_GetPixelsFromPicture(kakera_File * picture, kakera_Rectangle* clipArea)
 {
     kakera_private::CheckNullPointer(picture);
     SDL_Surface* RAWSurface = IMG_Load_RW(SDL_RWFromConstMem(picture->data, picture->size), 1);
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
-    int pixelSize = surface->pitch * surface->h;
-    char* result = new char[pixelSize];
-    memcpy(result, surface->pixels, pixelSize);
-    SDL_FreeSurface(surface);
+    char* result;
+    if (clipArea == nullptr)
+    {
+        int pixelSize = surface->pitch * surface->h;
+        result = new char[pixelSize];
+        memcpy(result, surface->pixels, pixelSize);
+        SDL_FreeSurface(surface);
+    }
+    else
+    {
+        SDL_Surface* clipSurface = SDL_CreateRGBSurfaceWithFormat(0, clipArea->w, clipArea->h, 32, SDL_PIXELFORMAT_RGBA8888);
+        SDL_Rect* clipRect = kakera_private::ConvertRect(clipArea);
+        SDL_BlitSurface(surface, clipRect, clipSurface, NULL);
+        delete clipRect;
+        SDL_FreeSurface(surface);
+        int pixelSize = clipSurface->pitch * clipSurface->h;
+        result = new char[pixelSize];
+        memcpy(result, clipSurface->pixels, pixelSize);
+        SDL_FreeSurface(clipSurface);
+    }
     return result;
 }
 
@@ -347,7 +363,11 @@ void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
 
 void kakera_RotateElement(kakera_Element * element, double angle)
 {
-    kakera_private::CheckNullPointer(element);    
+    kakera_private::CheckNullPointer(element);
+    if (!element->isRotating)
+    {
+        element->isRotating = true;
+    }
     element->rotateAngle = angle;
     if (!element->node->children.empty())
     {

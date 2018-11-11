@@ -27,9 +27,10 @@ unsigned int kakera_GetWindowPosCentered()
 kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int h, int flags)
 {
     kakera_Window* result = new kakera_Window;
-    result->window = SDL_CreateWindow(title, x, y, w, h, flags);
+    result->window = SDL_CreateWindow(title, x, y, w, h, flags | SDL_WINDOW_ALLOW_HIGHDPI);
     result->renderer = SDL_CreateRenderer(result->window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawColor(result->renderer, 255, 255, 255, 255);
+    //SDL_SetRenderDrawBlendMode(result->renderer, SDL_BLENDMODE_BLEND);
     result->FPSSem = SDL_CreateSemaphore(1);
     result->isQuit = false;
     return result;
@@ -210,8 +211,8 @@ void kakera_private_RefreshAll(kakera_Window * window)
                 else
                 {
                     SDL_Rect viewport = {
-                        element->viewport.x,
-                        element->viewport.y,
+                        element->node->parent->data->viewport.x,
+                        element->node->parent->data->viewport.y,
                         element->node->parent->data->displaySize.w,
                         element->node->parent->data->displaySize.h
                     };
@@ -220,22 +221,38 @@ void kakera_private_RefreshAll(kakera_Window * window)
                         element->position.y,
                         element->displaySize.w,
                         element->displaySize.h
-                    };
+                    };                    
                     if (kakera_private::Is2RectIntersected(&viewport, &elementPositionAndSize))
-                    {                        
-                        auto result = kakera_private::Get2RectIntersection(&viewport, &elementPositionAndSize);
-                        memmove(element->renderInfo.positionAndSize, result, sizeof(SDL_Rect));
-                        delete result;
-                        if (element->renderInfo.positionAndSize->w < element->displaySize.w ||
-                            element->renderInfo.positionAndSize->h < element->displaySize.h)
+                    {
+                        if (!element->renderInfo.isRender)
                         {
-                            element->renderInfo.cropArea->x = (static_cast<float>(element->realSize.w) / static_cast<float>(element->displaySize.w)) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
-                            element->renderInfo.cropArea->y = (static_cast<float>(element->realSize.h) / static_cast<float>(element->displaySize.h)) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
-                            element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
-                            element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
+                            element->renderInfo.isRender = true;
+                        }
+
+                        if (!element->isRotating)
+                        {
+                            auto result = kakera_private::Get2RectIntersection(&viewport, &elementPositionAndSize);
+                            memmove(element->renderInfo.positionAndSize, result, sizeof(SDL_Rect));
+                            delete result;
+                            if (element->renderInfo.positionAndSize->w < element->displaySize.w ||
+                                element->renderInfo.positionAndSize->h < element->displaySize.h)
+                            {
+                                element->renderInfo.cropArea->x = (static_cast<float>(element->realSize.w) / static_cast<float>(element->displaySize.w)) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
+                                element->renderInfo.cropArea->y = (static_cast<float>(element->realSize.h) / static_cast<float>(element->displaySize.h)) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
+                                element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
+                                element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
+                            }
+                            else
+                            {
+                                element->renderInfo.cropArea->x = 0;
+                                element->renderInfo.cropArea->y = 0;
+                                element->renderInfo.cropArea->w = element->realSize.w;
+                                element->renderInfo.cropArea->h = element->realSize.h;
+                            }
                         }
                         else
                         {
+                            memmove(element->renderInfo.positionAndSize, &elementPositionAndSize, sizeof(SDL_Rect));
                             element->renderInfo.cropArea->x = 0;
                             element->renderInfo.cropArea->y = 0;
                             element->renderInfo.cropArea->w = element->realSize.w;
@@ -357,12 +374,12 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             switch (event->window.event)
             {
             case SDL_WINDOWEVENT_CLOSE:
-            {
                 window->isQuit = true;
                 break;
-            }
+            /*case SDL_WINDOWEVENT_RESIZED:
+                SDL_SetWindowSize(window->window, event->window.data1, event->window.data2);
+                break;*/
             default:
-
                 break;
             }            
         }
@@ -398,7 +415,7 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                         break;
                     }
                 }
-            }            
+            }
         }
         break;
         case SDL_MOUSEBUTTONDOWN:
@@ -441,8 +458,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                     }
                 }
             }
-            break;
         }
+        break;
         case SDL_MOUSEBUTTONUP:
         {
             int mouseX, mouseY;
@@ -493,8 +510,8 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                     }
                 }
             }
-            break;
         }
+        break;
         case SDL_MOUSEWHEEL:
         {
             if (window->activeScene->focusElement != nullptr &&
@@ -503,9 +520,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                 window->event.mouse.wheel.x = event->wheel.x;
                 window->event.mouse.wheel.y = event->wheel.y;
                 kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL);
-            }
-            break;
+            }            
         }
+        break;
         case SDL_KEYDOWN:
         {
             if (window->activeScene->focusElement != nullptr &&
@@ -523,9 +540,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             {
                 window->event.keyboard.key = static_cast<kakera_KeyboardKey>(event->key.keysym.scancode);
                 kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_KEY_UP);
-            }
-            break;
+            }            
         }
+        break;
         case SDL_TEXTEDITING:
         {
             if (window->activeScene->focusElement != nullptr &&
@@ -542,9 +559,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                 SDL_SetTextInputRect(inputRect);
                 delete inputRect;
                 kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);
-            }
-            break;
+            }            
         }
+        break;
         case SDL_TEXTINPUT:
         {
             if (window->activeScene->focusElement != nullptr &&
@@ -553,9 +570,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             {
                 window->activeScene->focusElement->receivedInput += string(event->text.text);
                 kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_TEXT_INPUT);
-            }
-            break;
+            }            
         }
+        break;
         case SDL_USEREVENT:
         {
             if (window != nullptr)
@@ -571,9 +588,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                         //kakera_private_RefreshRect(window, reinterpret_cast<SDL_Rect*>(event->user.data1));
                     }
                 }
-            }
-            break;
+            }            
         }
+        break;
         default:
             break;
         }

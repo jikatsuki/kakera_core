@@ -109,3 +109,22 @@ SDL_Rect * kakera_private::Get2RectIntersection(SDL_Rect * rect1, SDL_Rect * rec
     });
     return result;
 }
+
+void kakera_private::printSDLRect(const SDL_Rect & rect)
+{
+    cout << "Rect x=" << rect.x << endl;
+    cout << "Rect y=" << rect.y << endl;
+    cout << "Rect w=" << rect.w << endl;
+    cout << "Rect h=" << rect.h << endl;
+    cout << endl;
+}
+
+SDL_Rect * kakera_private::ConvertRect(const kakera_Rectangle * rect)
+{
+    SDL_Rect* result;
+    result->x = rect->x;
+    result->y = rect->y;
+    result->w = rect->w;
+    result->h = rect->h;
+    return result;
+}

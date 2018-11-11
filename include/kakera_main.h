@@ -29,7 +29,7 @@ extern "C"
     #define KAKERA_DEPRECATED
 #endif
 
-#define KAKERA_CORE_VERSION "1.0.0 Asterisk"
+#define KAKERA_CORE_VERSION "1.1.0 Asterisk"
 
 extern KAKERA_EXPORT void kakera_Initialize();
 extern KAKERA_EXPORT void kakera_Terminate();
