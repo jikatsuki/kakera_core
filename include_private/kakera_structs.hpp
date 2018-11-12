@@ -2,7 +2,7 @@
 #define KAKERA_CORE_STRUCTS
 
 #include <vector>
-#include <forward_list>
+#include <list>
 #include <functional>
 #include <stack>
 #include <queue>
@@ -84,7 +84,7 @@ namespace kakera_private
 
         void Clear()
         {
-            forward_list<Node*> tempList;
+            list<Node*> tempList;
             BreadthFirstSearch([&tempList](Node* node) {
                 tempList.emplace_front(node);
             });
@@ -92,6 +92,7 @@ namespace kakera_private
             {
                 delete node;
             }
+            tempList.clear();
         }
 
         int InsertNode(Node* node, Node* parent = nullptr)
@@ -155,6 +156,15 @@ namespace kakera_private
             {
                 return -1;
             }
+        }
+
+        list<T>* ConvertToList()
+        {
+            list<T>* result = new list<T>;
+            BreadthFirstSearch([&result](Node* node) {
+                result->emplace_back(node->data);
+            });
+            return result;
         }
 
     private:

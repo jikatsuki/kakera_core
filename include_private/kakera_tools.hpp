@@ -4,6 +4,8 @@
 #include "kakera_header.h"
 #include "kakera_structs.hpp"
 #include "kakera_declaration.h"
+#include "kakera_part_implementation.h"
+#include "kakera_element.h"
 #include <string>
 #include <vector>
 #include <sstream>
@@ -97,6 +99,7 @@ namespace kakera_private
     void printSDLRect(const SDL_Rect& rect);
 
     SDL_Rect* ConvertRect(const kakera_Rectangle* rect);
+    void DestroyElementWithoutRefreshingList(kakera_Element ** element);
 }
 
 #endif // !KAKERA_CORE_TOOLS

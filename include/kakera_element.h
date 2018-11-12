@@ -52,6 +52,7 @@ extern KAKERA_EXPORT void               kakera_SetElementContent(kakera_Element*
 extern KAKERA_EXPORT void               kakera_SetElementContentByYUVPixels(kakera_Element* element, void* YPixels, void* UPixels, void* VPixels, int YPitch, int UPitch, int VPitch);
 extern KAKERA_EXPORT void               kakera_SetElementOpacity(kakera_Element* element, uint8_t opacity);
 extern KAKERA_EXPORT void               kakera_RotateElement(kakera_Element* element, double angle);
+extern KAKERA_EXPORT void               kakera_StopRotateElement(kakera_Element* element);
 extern KAKERA_EXPORT void               kakera_SaveDataToElement(kakera_Element* element, const char* name, void* data);
 extern KAKERA_EXPORT void*              kakera_ReadDataFromElement(kakera_Element* element, const char* name);
 extern KAKERA_EXPORT void               kakera_SetElementReceiveInput(kakera_Element* element, bool receive);

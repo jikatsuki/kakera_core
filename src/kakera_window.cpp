@@ -30,7 +30,6 @@ kakera_Window * kakera_CreateWindow(const char * title, int x, int y, int w, int
     result->window = SDL_CreateWindow(title, x, y, w, h, flags | SDL_WINDOW_ALLOW_HIGHDPI);
     result->renderer = SDL_CreateRenderer(result->window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawColor(result->renderer, 255, 255, 255, 255);
-    //SDL_SetRenderDrawBlendMode(result->renderer, SDL_BLENDMODE_BLEND);
     result->FPSSem = SDL_CreateSemaphore(1);
     result->isQuit = false;
     return result;
@@ -184,18 +183,13 @@ void kakera_private_RefreshAll(kakera_Window * window)
     kakera_private_ClearRenderRect(window, nullptr);
     if (window->activeScene != nullptr)
     {
-        forward_list<kakera_Element*> elementList;
-        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-            elementList.emplace_front(node->data);
-        });
-        elementList.reverse();
-        for (auto element : elementList)
+        for (auto element : *window->activeScene->elementList)
         {
             switch (element->reference)
             {
             case KAKERA_POSREFER_PARENT:
             {
-                if (element->node == window->activeScene->elementList.GetRoot())
+                if (element->node == window->activeScene->elementTree.GetRoot())
                 {
                     int window_w, window_h;
                     kakera_GetWindowSize(window, &window_w, &window_h);
@@ -303,12 +297,7 @@ void kakera_private_RefreshRect(kakera_Window * window, SDL_Rect* refreshArea)
     kakera_private_ClearRenderRect(window, refreshArea);
     if (window->activeScene != nullptr)
     {
-        forward_list<kakera_Element*> elementList;
-        window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-            elementList.emplace_front(node->data);
-        });
-        elementList.reverse();
-        for (auto element : elementList)
+        for (auto element : *window->activeScene->elementList)
         {
             SDL_Rect elementPositionAndSize = {
                 element->position.x,
@@ -390,12 +379,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             SDL_GetMouseState(&mouseX, &mouseY);
             window->event.mouse.pointer.x = mouseX;
             window->event.mouse.pointer.y = mouseY;
-            forward_list<kakera_Element*> elementList;
-            window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-                elementList.emplace_front(node->data);
-            });
-            for (auto element : elementList)
+            for (auto iter = window->activeScene->elementList->rbegin(); iter != window->activeScene->elementList->rend(); iter++)
             {
+                auto element = *iter;
                 if (element->isResponseEvent)
                 {
                     if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize))
@@ -438,12 +424,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             default:
                 break;
             }
-            forward_list<kakera_Element*> elementList;
-            window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-                elementList.emplace_front(node->data);
-            });
-            for (auto element : elementList)
+            for (auto iter = window->activeScene->elementList->rbegin(); iter != window->activeScene->elementList->rend(); iter++)
             {
+                auto element = *iter;
                 if (element->isResponseEvent)
                 {
                     if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
@@ -480,12 +463,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             default:
                 break;
             }
-            forward_list<kakera_Element*> elementList;
-            window->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-                elementList.emplace_front(node->data);
-            });
-            for (auto element : elementList)
+            for (auto iter = window->activeScene->elementList->rbegin(); iter != window->activeScene->elementList->rend(); iter++)
             {
+                auto element = *iter;
                 if (element->isResponseEvent)
                 {
                     if (isPointInArea(mouseX, mouseY, element->renderInfo.positionAndSize) &&
@@ -599,13 +579,6 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     return 0;
 }
 
-Uint32 kakera_private_FPSSemCallback(Uint32 interval, void * param)
-{
-    kakera_Window* window = static_cast<kakera_Window*>(param);
-    SDL_SemPost(window->FPSSem);
-    return 0;
-}
-
 void kakera_StartWindow(kakera_Window ** window, void* userdata)
 {
     kakera_private::CheckNullPointer(*window);
@@ -617,15 +590,14 @@ void kakera_StartWindow(kakera_Window ** window, void* userdata)
     kakera_private_RefreshAll(*window);
     while (!(*window)->isQuit)
     {
-        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, kakera_private_FPSSemCallback, *window);
+        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, [](Uint32 interval, void * param) -> Uint32 {
+            kakera_Window* window = reinterpret_cast<kakera_Window*>(param);
+            SDL_SemPost(window->FPSSem);
+            return 0;
+        }, *window);
         if ((*window)->activeScene != nullptr)
         {
-            forward_list<kakera_Element*> elementList;
-            (*window)->activeScene->elementList.BreadthFirstSearch([&elementList](Tree<kakera_Element*>::Node* node) {
-                elementList.emplace_front(node->data);
-            });
-            elementList.reverse();
-            for (auto element : elementList)
+            for (auto element : *(*window)->activeScene->elementList)
             {
                 kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_FRAME_REFRESH);
             }

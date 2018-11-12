@@ -31,15 +31,15 @@ void kakera_DestroyScene(kakera_Scene ** scene)
 {
     kakera_private::CheckNullPointer(*scene);
     kakera_private::RunCallback((*scene), KAKERA_SCENE_ON_DESTROY);
-    forward_list<kakera_Element*> elements;
-    (*scene)->elementList.BreadthFirstSearch([&elements](Tree<kakera_Element*>::Node* node) {
-        elements.emplace_front(node->data);
-    });
-    for (auto element : elements)
+    (*scene)->elementTree.Clear();
+    for (auto iter = (*scene)->elementList->rbegin(); iter != (*scene)->elementList->rend(); iter++)
     {
-        kakera_DestroyElement(&element);
+        auto element = *iter;
+        kakera_private::DestroyElementWithoutRefreshingList(&element);
     }
+    
     (*scene)->callbackList.clear();
+    delete (*scene)->elementList;
     delete *scene;
     *scene = nullptr;
 }
@@ -62,16 +62,18 @@ void kakera_AddElementToScene(kakera_Scene * scene, kakera_Element * element, ka
     }
     else
     {
-        if (scene->elementList.GetRoot() != nullptr)
+        if (scene->elementTree.GetRoot() != nullptr)
         {
-            parentNode = scene->elementList.GetRoot();
+            parentNode = scene->elementTree.GetRoot();
         }
         else
         {
             parentNode = nullptr;
         }
     }
-    scene->elementList.InsertNode(element->node, parentNode);
+    scene->elementTree.InsertNode(element->node, parentNode);
+    delete scene->elementList;
+    scene->elementList = scene->elementTree.ConvertToList();
     element->scene = scene;
 }
 
@@ -79,7 +81,7 @@ kakera_Element * kakera_GetElementByNameFromScene(kakera_Scene * scene, const ch
 {
     kakera_private::CheckNullPointer(scene);
     kakera_Element* result = nullptr;
-    scene->elementList.BreadthFirstSearch([&name, &result](Tree<kakera_Element*>::Node* node) {
+    scene->elementTree.BreadthFirstSearch([&name, &result](Tree<kakera_Element*>::Node* node) {
         if (name == kakera_GetElementName(node->data))
         {
             result = node->data;
@@ -92,11 +94,14 @@ void kakera_DeleteElementFromScene(kakera_Scene * scene, kakera_Element * elemen
 {
     kakera_private::CheckNullPointer(scene);
     kakera_private::CheckNullPointer(element);
-    Tree<kakera_Element*>::Node* elementNode = scene->elementList.GetNodeByData(element);
+    Tree<kakera_Element*>::Node* elementNode = scene->elementTree.GetNodeByData(element);
     if (elementNode != nullptr)
     {
-        scene->elementList.DeleteNode(elementNode);
+        delete element;
+        scene->elementTree.DeleteNode(elementNode);
     }
+    delete scene->elementList;
+    scene->elementList = scene->elementTree.ConvertToList();
 }
 
 void kakera_BindEventToScene(kakera_Scene * scene, kakera_SceneEvents event, kakera_SceneEventCallback callback)

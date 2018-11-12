@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 #include <cstdlib>
+#include <list>
 #include "pugixml/pugixml.hpp"
 
 using namespace std;
@@ -34,7 +35,8 @@ struct kakera_Window
 struct kakera_Scene
 {
     kakera_Window* window = nullptr;
-    Tree<kakera_Element*> elementList;
+    Tree<kakera_Element*> elementTree;
+    list<kakera_Element*>* elementList = nullptr;
     map<kakera_SceneEvents, kakera_SceneEventCallback> callbackList;
     kakera_Element* mouseEnteredElement = nullptr;
     kakera_Element* focusElement = nullptr;

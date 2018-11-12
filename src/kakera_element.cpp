@@ -393,9 +393,16 @@ void kakera_RotateElement(kakera_Element * element, double angle)
     }*/
 }
 
+void kakera_StopRotateElement(kakera_Element * element)
+{
+    kakera_private::CheckNullPointer(element);
+    element->isRotating = false;
+    element->rotateAngle = 0.0;
+}
+
 void kakera_SaveDataToElement(kakera_Element * element, const char * name, void * data)
 {
-    kakera_private::CheckNullPointer(element);    
+    kakera_private::CheckNullPointer(element);
     element->dataList.emplace(name, data);
 }
 

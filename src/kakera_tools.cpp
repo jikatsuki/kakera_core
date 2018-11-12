@@ -128,3 +128,15 @@ SDL_Rect * kakera_private::ConvertRect(const kakera_Rectangle * rect)
     result->h = rect->h;
     return result;
 }
+
+void kakera_private::DestroyElementWithoutRefreshingList(kakera_Element ** element)
+{
+    kakera_private::CheckNullPointer(*element);
+    kakera_private::RunCallback((*element), KAKERA_ELEMENT_ON_DESTROY);
+    (*element)->callbackList.clear();
+    (*element)->dataList.clear();
+    delete (*element)->renderInfo.positionAndSize;
+    delete (*element)->renderInfo.cropArea;
+    delete *element;
+    //*element = nullptr;
+}
