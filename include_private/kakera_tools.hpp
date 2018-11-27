@@ -2,10 +2,7 @@
 #define KAKERA_CORE_TOOLS
 
 #include "kakera_header.h"
-#include "kakera_structs.hpp"
 #include "kakera_declaration.h"
-#include "kakera_part_implementation.h"
-#include "kakera_element.h"
 #include <string>
 #include <vector>
 #include <sstream>
@@ -34,44 +31,11 @@ namespace kakera_private
 
     vector<string> splitString(const string& str, const char separator);
 
-    struct Refresh_Moved
-    {
-        SDL_Rect oldPosition;
-        SDL_Rect newPosition;
-    };
-
-    struct Refresh_Unmoved
-    {
-        SDL_Rect refreshArea;
-    };
-
-    struct Refresh_Rotate
-    {
-        SDL_Rect positionAndSize;
-    };
-
-    union RefreshInfo
-    {
-        //この歌声がMILLION!!
-        Refresh_Moved moved;
-        Refresh_Unmoved unmoved;
-        Refresh_Rotate rotate;
-    };
-
-    enum class RefreshType
-    {
-        Refresh_Moved,
-        Refresh_Unmoved,
-        Refresh_Rotate
-    };
-
-    void PushRefreshEvent();
-
-    void PushRefreshEvent(RefreshType type, RefreshInfo& info);
-
     bool Is2RectIntersected(SDL_Rect* rect1, SDL_Rect* rect2);
 
     SDL_Rect* Get2RectIntersection(SDL_Rect* rect1, SDL_Rect* rect2);
+
+    SDL_Rect* Unite2Rect(SDL_Rect* rect1, SDL_Rect* rect2);
 
     template<typename T>
     void CheckNullPointer(T ptr)
@@ -99,7 +63,11 @@ namespace kakera_private
     void printSDLRect(const SDL_Rect& rect);
 
     SDL_Rect* ConvertRect(const kakera_Rectangle* rect);
-    void DestroyElementWithoutRefreshingList(kakera_Element ** element);
+
+    inline bool ConvertBool(kakera_Boolean& boolean)
+    {
+        return boolean == KAKERA_TRUE ? true : false;
+    }
 }
 
 #endif // !KAKERA_CORE_TOOLS

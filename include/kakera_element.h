@@ -42,7 +42,7 @@ extern KAKERA_EXPORT void               kakera_GetElementPosition(kakera_Element
 extern KAKERA_EXPORT void               kakera_GetElementViewport(kakera_Element* element, int* x, int* y);
 extern KAKERA_EXPORT void               kakera_MoveElementViewport(kakera_Element* element, int x, int y);
 extern KAKERA_EXPORT const char*        kakera_GetElementName(kakera_Element* element);
-extern KAKERA_EXPORT void               kakera_SetIsElementResponseEvent(kakera_Element* element, bool response);
+extern KAKERA_EXPORT void               kakera_SetIsElementResponseEvent(kakera_Element* element, kakera_Boolean response);
 extern KAKERA_EXPORT void               kakera_BindEventToElement(kakera_Element* element, kakera_ElementEvents event, kakera_ElementEventCallback callback);
 extern KAKERA_EXPORT kakera_Scene*      kakera_GetSceneFromElement(kakera_Element* element);
 extern KAKERA_EXPORT char*              kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b);
@@ -55,7 +55,7 @@ extern KAKERA_EXPORT void               kakera_RotateElement(kakera_Element* ele
 extern KAKERA_EXPORT void               kakera_StopRotateElement(kakera_Element* element);
 extern KAKERA_EXPORT void               kakera_SaveDataToElement(kakera_Element* element, const char* name, void* data);
 extern KAKERA_EXPORT void*              kakera_ReadDataFromElement(kakera_Element* element, const char* name);
-extern KAKERA_EXPORT void               kakera_SetElementReceiveInput(kakera_Element* element, bool receive);
+extern KAKERA_EXPORT void               kakera_SetElementReceiveInput(kakera_Element* element, kakera_Boolean receive);
 extern KAKERA_EXPORT const char*        kakera_GetElementInput(kakera_Element* element);
 extern KAKERA_EXPORT const char*        kakera_GetElementEditingInput(kakera_Element* element);
 

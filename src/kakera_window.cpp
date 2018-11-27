@@ -6,6 +6,7 @@
 #include "kakera_element.h"
 #include "kakera_file.h"
 #include "kakera_tools.hpp"
+#include "kakera_private_apis.h"
 #include <forward_list>
 #include <iostream>
 #include <thread>
@@ -13,8 +14,6 @@
 #include <future>
 #include <cmath>
 #include <cstring>
-
-KAKERA_PRIVATE_USING_REFRESH_EVENT
 
 using namespace std;
 using namespace kakera_private;
@@ -118,11 +117,11 @@ void kakera_RaiseWindow(kakera_Window * window)
     SDL_RaiseWindow(window->window);
 }
 
-void kakera_SetWindowResizeable(kakera_Window * window, bool resizeable)
+void kakera_SetWindowResizeable(kakera_Window * window, kakera_Boolean resizeable)
 {
     kakera_private::CheckNullPointer(window);
     SDL_bool flag;
-    if (resizeable)
+    if (kakera_private::ConvertBool(resizeable))
     {
         flag = SDL_TRUE;
     }
@@ -160,10 +159,10 @@ kakera_Event * kakera_GetWindowEvent(kakera_Window * window)
     return &window->event;
 }
 
-void kakera_SetUsingDirtyRectRender(kakera_Window * window, bool isUse)
+void kakera_SetUsingDirtyRectRender(kakera_Window * window, kakera_Boolean isUse)
 {
     kakera_private::CheckNullPointer(window);
-    window->usingDirtyRect = isUse;
+    window->usingDirtyRect = kakera_private::ConvertBool(isUse);
 }
 
 void kakera_private_ClearRenderRect(kakera_Window * window, SDL_Rect* rect)
@@ -176,120 +175,6 @@ void kakera_private_ClearRenderRect(kakera_Window * window, SDL_Rect* rect)
     {
         SDL_RenderFillRect(window->renderer, rect);
     }
-}
-
-void kakera_private_RefreshAll(kakera_Window * window)
-{
-    kakera_private_ClearRenderRect(window, nullptr);
-    if (window->activeScene != nullptr)
-    {
-        for (auto element : *window->activeScene->elementList)
-        {
-            switch (element->reference)
-            {
-            case KAKERA_POSREFER_PARENT:
-            {
-                if (element->node == window->activeScene->elementTree.GetRoot())
-                {
-                    int window_w, window_h;
-                    kakera_GetWindowSize(window, &window_w, &window_h);
-                    element->position.x = 0;
-                    element->position.y = 0;
-                    element->displaySize.w = window_w;
-                    element->displaySize.h = window_h;
-                    element->renderInfo.positionAndSize->x = 0;
-                    element->renderInfo.positionAndSize->y = 0;
-                    element->renderInfo.positionAndSize->w = window_w;
-                    element->renderInfo.positionAndSize->h = window_h;
-                }
-                else
-                {
-                    SDL_Rect viewport = {
-                        element->node->parent->data->viewport.x,
-                        element->node->parent->data->viewport.y,
-                        element->node->parent->data->displaySize.w,
-                        element->node->parent->data->displaySize.h
-                    };
-                    SDL_Rect elementPositionAndSize = {
-                        element->position.x,
-                        element->position.y,
-                        element->displaySize.w,
-                        element->displaySize.h
-                    };                    
-                    if (kakera_private::Is2RectIntersected(&viewport, &elementPositionAndSize))
-                    {
-                        if (!element->renderInfo.isRender)
-                        {
-                            element->renderInfo.isRender = true;
-                        }
-
-                        if (!element->isRotating)
-                        {
-                            auto result = kakera_private::Get2RectIntersection(&viewport, &elementPositionAndSize);
-                            memmove(element->renderInfo.positionAndSize, result, sizeof(SDL_Rect));
-                            delete result;
-                            if (element->renderInfo.positionAndSize->w < element->displaySize.w ||
-                                element->renderInfo.positionAndSize->h < element->displaySize.h)
-                            {
-                                element->renderInfo.cropArea->x = (static_cast<float>(element->realSize.w) / static_cast<float>(element->displaySize.w)) * (element->displaySize.w - element->renderInfo.positionAndSize->w);
-                                element->renderInfo.cropArea->y = (static_cast<float>(element->realSize.h) / static_cast<float>(element->displaySize.h)) * (element->displaySize.h - element->renderInfo.positionAndSize->h);
-                                element->renderInfo.cropArea->w = (static_cast<float>(element->renderInfo.positionAndSize->w) / static_cast<float>(element->displaySize.w)) * element->realSize.w;
-                                element->renderInfo.cropArea->h = (static_cast<float>(element->renderInfo.positionAndSize->h) / static_cast<float>(element->displaySize.h)) * element->realSize.h;
-                            }
-                            else
-                            {
-                                element->renderInfo.cropArea->x = 0;
-                                element->renderInfo.cropArea->y = 0;
-                                element->renderInfo.cropArea->w = element->realSize.w;
-                                element->renderInfo.cropArea->h = element->realSize.h;
-                            }
-                        }
-                        else
-                        {
-                            memmove(element->renderInfo.positionAndSize, &elementPositionAndSize, sizeof(SDL_Rect));
-                            element->renderInfo.cropArea->x = 0;
-                            element->renderInfo.cropArea->y = 0;
-                            element->renderInfo.cropArea->w = element->realSize.w;
-                            element->renderInfo.cropArea->h = element->realSize.h;
-                        }
-                    }
-                    else
-                    {
-                        element->renderInfo.isRender = false;
-                    }
-                }
-                break;
-            }
-            case KAKERA_POSREFER_WINDOW:
-            {
-                element->renderInfo.positionAndSize->x = element->position.x;
-                element->renderInfo.positionAndSize->y = element->position.y;
-                element->renderInfo.positionAndSize->w = element->displaySize.w;
-                element->renderInfo.positionAndSize->h = element->displaySize.h;
-                element->renderInfo.cropArea->x = 0;
-                element->renderInfo.cropArea->y = 0;
-                element->renderInfo.cropArea->w = element->realSize.w;
-                element->renderInfo.cropArea->h = element->realSize.h;
-                break;
-            }
-            default:
-                break;
-            }
-            if (element->renderInfo.isRender && element->texture != nullptr)
-            {
-                SDL_RenderCopyEx(
-                    window->renderer,
-                    element->texture,
-                    element->renderInfo.cropArea,
-                    element->renderInfo.positionAndSize,
-                    element->rotateAngle,
-                    NULL,
-                    SDL_FLIP_NONE
-                );
-            }
-        }
-    }
-    SDL_RenderPresent(window->renderer);
 }
 
 void kakera_private_RefreshRect(kakera_Window * window, SDL_Rect* refreshArea)
@@ -365,9 +250,9 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             case SDL_WINDOWEVENT_CLOSE:
                 window->isQuit = true;
                 break;
-            /*case SDL_WINDOWEVENT_RESIZED:
-                SDL_SetWindowSize(window->window, event->window.data1, event->window.data2);
-                break;*/
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+                kakera_private::RefreshAll(window);
+                break;
             default:
                 break;
             }            
@@ -482,7 +367,6 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
                         else if (event->button.clicks == 1)
                         {
                             kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
-                            //kakera_private_RunCallback(element, KAKERA_ELEMENT_ON_CLICK);
                         }
                         kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_MOUSE_UP);
                         kakera_SetFocusElement(window->activeScene, element);
@@ -497,8 +381,16 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             if (window->activeScene->focusElement != nullptr &&
                 window->activeScene->focusElement->isResponseEvent)
             {
-                window->event.mouse.wheel.x = event->wheel.x;
-                window->event.mouse.wheel.y = event->wheel.y;
+                if (event->wheel.x != 0)
+                {
+                    window->event.wheel.direction = event->wheel.x > 0 ? KAKERA_MOUSE_WHEEL_RIGHT : KAKERA_MOUSE_WHEEL_LEFT;
+                    window->event.wheel.distance = abs(event->wheel.x);
+                }
+                if (event->wheel.y != 0)
+                {
+                    window->event.wheel.direction = event->wheel.y > 0 ? KAKERA_MOUSE_WHEEL_DOWN : KAKERA_MOUSE_WHEEL_UP;
+                    window->event.wheel.distance = abs(event->wheel.y);
+                }
                 kakera_private::RunCallback(window->activeScene->focusElement, KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL);
             }            
         }
@@ -553,24 +445,6 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
             }            
         }
         break;
-        case SDL_USEREVENT:
-        {
-            if (window != nullptr)
-            {
-                if (event->user.type == kakera_RefreshEvent)
-                {
-                    if (event->user.data1 == nullptr)
-                    {
-                        //kakera_private_RefreshAll(window);
-                    }
-                    else
-                    {
-                        //kakera_private_RefreshRect(window, reinterpret_cast<SDL_Rect*>(event->user.data1));
-                    }
-                }
-            }            
-        }
-        break;
         default:
             break;
         }
@@ -579,34 +453,73 @@ int kakera_private_EventFilter(void * userdata, SDL_Event * event)
     return 0;
 }
 
-void kakera_StartWindow(kakera_Window ** window, void* userdata)
+void kakera_StartWindow(kakera_Window ** window, kakera_WindowRenderMode mode, void* userdata)
 {
     kakera_private::CheckNullPointer(*window);
     (*window)->userdata = userdata;
     SDL_Event event;
-    //SDL_SetEventFilter(kakera_private_EventFilter, *window);
     SDL_AddEventWatch(kakera_private_EventFilter, *window);
     SDL_StartTextInput();
-    kakera_private_RefreshAll(*window);
-    while (!(*window)->isQuit)
+    kakera_private::RefreshAll(*window);
+    if (mode == KAKERA_RENDER_GAME)
     {
-        SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, [](Uint32 interval, void * param) -> Uint32 {
-            kakera_Window* window = reinterpret_cast<kakera_Window*>(param);
-            SDL_SemPost(window->FPSSem);
-            return 0;
-        }, *window);
-        if ((*window)->activeScene != nullptr)
+        (*window)->isGameRender = true;
+        while (!(*window)->isQuit)
         {
-            for (auto element : *(*window)->activeScene->elementList)
+            SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, [](Uint32 interval, void * param) -> Uint32 {
+                kakera_Window* window = reinterpret_cast<kakera_Window*>(param);
+                SDL_SemPost(window->FPSSem);
+                return 0;
+            }, *window);            
+            SDL_PollEvent(&event);
+            if ((*window)->usingDirtyRect)
             {
-                kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_FRAME_REFRESH);
+                if ((*window)->activeScene->dirtyArea != nullptr)
+                {
+                    kakera_private::RefreshRect(*window, (*window)->activeScene->dirtyArea);
+                    delete (*window)->activeScene->dirtyArea;
+                    (*window)->activeScene->dirtyArea = nullptr;
+                }
             }
+            else
+            {
+                kakera_private::RefreshAll(*window);
+            }
+            SDL_SemWait((*window)->FPSSem);
+            SDL_RemoveTimer(FPSTimer);
         }
-        kakera_private_RefreshAll(*window);
-        SDL_PollEvent(&event);        
-        SDL_SemWait((*window)->FPSSem);
-        SDL_RemoveTimer(FPSTimer);
     }
+    else
+    {
+        while (!(*window)->isQuit)
+        {
+            SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, [](Uint32 interval, void * param) -> Uint32 {
+                kakera_Window* window = reinterpret_cast<kakera_Window*>(param);
+                SDL_SemPost(window->FPSSem);
+                return 0;
+            }, *window);
+            SDL_PollEvent(&event);
+            if ((*window)->activeScene->isRefresh)
+            {
+                if ((*window)->usingDirtyRect)
+                {
+                    if ((*window)->activeScene->dirtyArea != nullptr)
+                    {
+                        kakera_private::RefreshRect(*window, (*window)->activeScene->dirtyArea);
+                        delete (*window)->activeScene->dirtyArea;
+                        (*window)->activeScene->dirtyArea = nullptr;
+                    }
+                }
+                else
+                {
+                    kakera_private::RefreshAll(*window);
+                }
+                (*window)->activeScene->isRefresh = false;
+            }
+            SDL_SemWait((*window)->FPSSem);
+            SDL_RemoveTimer(FPSTimer);
+        }
+    }    
     if ((*window)->isQuit)
     {
         SDL_DelEventWatch(kakera_private_EventFilter, *window);

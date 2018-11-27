@@ -3,10 +3,9 @@
 #include "kakera_part_implementation.h"
 #include "kakera_structs.hpp"
 #include "kakera_tools.hpp"
+#include "kakera_private_apis.h"
 #include <cstring>
 #include <mutex>
-
-KAKERA_PRIVATE_USING_REFRESH_EVENT
 
 using namespace std;
 using namespace kakera_private;
@@ -37,22 +36,7 @@ void kakera_InitailizeElementComplex(kakera_Element * element, kakera_PixelForma
         element->SDLAccess = SDL_TEXTUREACCESS_STREAMING;
     }
     element->renderInfo.isRender = true;
-    kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_CREATE);    
-    /*if (element->scene->window->usingDirtyRect)
-    {
-        RefreshInfo info;
-        info.unmoved.refreshArea = {
-            element->position.x,
-            element->position.y,
-            element->displaySize.w,
-            element->displaySize.h
-        };
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Unmoved, info);
-    }
-    else
-    {
-        kakera_private::PushRefreshEvent();
-    }*/
+    kakera_private::RunCallback(element, KAKERA_ELEMENT_ON_CREATE);
 }
 
 void kakera_DestroyElement(kakera_Element ** element)
@@ -70,7 +54,7 @@ void kakera_DestroyElement(kakera_Element ** element)
 void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h)
 {
     kakera_private::CheckNullPointer(element);    
-    /*SDL_Rect oldrect, newrect;
+    SDL_Rect oldrect, newrect;
     oldrect = {
         element->position.x,
         element->position.y,
@@ -82,20 +66,21 @@ void kakera_SetElementDisplaySize(kakera_Element* element, int w, int h)
         element->position.y,
         w,
         h
-    };*/
+    };
     element->displaySize.w = w;
     element->displaySize.h = h;
-    /*if (element->scene->window->usingDirtyRect)
+    if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;
         info.moved.newPosition = newrect;
         info.moved.oldPosition = oldrect;
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Moved, info);
+        kakera_private::PushRefreshEvent(element->scene, RefreshType::Refresh_Moved, info);
     }
     else
     {
-        kakera_private::PushRefreshEvent();
-    }*/
+        kakera_private::PushRefreshEvent(element->scene);
+    }
+    //kakera_private::PushRefreshEvent(element->scene);
 }
 
 void kakera_GetElementDisplaySize(kakera_Element * element, int * w, int * h)
@@ -123,7 +108,7 @@ void kakera_GetElementRealSize(kakera_Element * element, int * w, int * h)
 void kakera_SetElementPosition(kakera_Element* element, int x, int y)
 {
     kakera_private::CheckNullPointer(element);    
-    /*SDL_Rect oldrect, newrect;
+    SDL_Rect oldrect, newrect;
     oldrect = {
         element->position.x,
         element->position.y,
@@ -135,20 +120,21 @@ void kakera_SetElementPosition(kakera_Element* element, int x, int y)
         y,
         element->displaySize.w,
         element->displaySize.h
-    };*/
+    };
     element->position.x = x;
     element->position.y = y;
-    /*if (element->scene->window->usingDirtyRect)
+    if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;
         info.moved.newPosition = newrect;
         info.moved.oldPosition = oldrect;
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Moved, info);
+        kakera_private::PushRefreshEvent(element->scene, RefreshType::Refresh_Moved, info);
     }
     else
     {
-        kakera_private::PushRefreshEvent();
-    }*/
+        kakera_private::PushRefreshEvent(element->scene);
+    }
+    //kakera_private::PushRefreshEvent(element->scene);
 }
 
 void kakera_GetElementPosition(kakera_Element * element, int * x, int * y)
@@ -170,7 +156,7 @@ void kakera_MoveElementViewport(kakera_Element* element, int x, int y)
     kakera_private::CheckNullPointer(element);    
     element->viewport.x = x;
     element->viewport.y = y;
-    /*if (element->scene->window->usingDirtyRect)
+    if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;
         info.unmoved.refreshArea = {
@@ -179,12 +165,13 @@ void kakera_MoveElementViewport(kakera_Element* element, int x, int y)
             element->displaySize.w,
             element->displaySize.h
         };
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Unmoved, info);
+        kakera_private::PushRefreshEvent(element->scene, RefreshType::Refresh_Unmoved, info);
     }
     else
     {
-        kakera_private::PushRefreshEvent();
-    }*/
+        kakera_private::PushRefreshEvent(element->scene);
+    }
+    //kakera_private::PushRefreshEvent(element->scene);
 }
 
 const char * kakera_GetElementName(kakera_Element * element)
@@ -193,10 +180,10 @@ const char * kakera_GetElementName(kakera_Element * element)
     return element->name;
 }
 
-void kakera_SetIsElementResponseEvent(kakera_Element * element, bool response)
+void kakera_SetIsElementResponseEvent(kakera_Element * element, kakera_Boolean response)
 {
     kakera_private::CheckNullPointer(element);    
-    element->isResponseEvent = response;
+    element->isResponseEvent = kakera_private::ConvertBool(response);
 }
 
 void kakera_BindEventToElement(kakera_Element * element, kakera_ElementEvents event, kakera_ElementEventCallback callback)
@@ -286,7 +273,7 @@ void kakera_SetElementContent(kakera_Element* element, void* pixels)
         SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
     }
     SDL_UpdateTexture(element->texture, NULL, pixels, element->realSize.w * 4);
-    /*if (element->scene->window->usingDirtyRect)
+    if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;
         info.unmoved.refreshArea = {
@@ -295,12 +282,13 @@ void kakera_SetElementContent(kakera_Element* element, void* pixels)
             element->displaySize.w,
             element->displaySize.h
         };
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Unmoved, info);
+        kakera_private::PushRefreshEvent(element->scene, RefreshType::Refresh_Unmoved, info);
     }
     else
     {
-        kakera_private::PushRefreshEvent();
-    }*/
+        kakera_private::PushRefreshEvent(element->scene);
+    }
+    //kakera_private::PushRefreshEvent(element->scene);
 }
 
 void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixels, void * UPixels, void * VPixels, int YPitch, int UPitch, int VPitch)
@@ -316,7 +304,7 @@ void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixel
         SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
     }
     SDL_UpdateYUVTexture(element->texture, NULL, static_cast<Uint8*>(YPixels), YPitch, static_cast<Uint8*>(UPixels), UPitch, static_cast<Uint8*>(VPixels), VPitch);
-    /*if (element->scene->window->usingDirtyRect)
+    if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;
         info.unmoved.refreshArea = {
@@ -325,12 +313,13 @@ void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixel
             element->displaySize.w,
             element->displaySize.h
         };
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Unmoved, info);
+        kakera_private::PushRefreshEvent(element->scene, RefreshType::Refresh_Unmoved, info);
     }
     else
     {
-        kakera_private::PushRefreshEvent();
-    }*/
+        kakera_private::PushRefreshEvent(element->scene);
+    }
+    //kakera_private::PushRefreshEvent(element->scene);
 }
 
 void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
@@ -344,7 +333,7 @@ void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
             SDL_SetTextureAlphaMod(node->data->texture, opacity);
         }
     }
-    /*if (element->scene->window->usingDirtyRect)
+    if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;
         info.unmoved.refreshArea = {
@@ -353,12 +342,13 @@ void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)
             element->displaySize.w,
             element->displaySize.h
         };
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Unmoved, info);
+        kakera_private::PushRefreshEvent(element->scene, RefreshType::Refresh_Unmoved, info);
     }
     else
     {
-        kakera_private::PushRefreshEvent();
-    }*/
+        kakera_private::PushRefreshEvent(element->scene);
+    }
+    //kakera_private::PushRefreshEvent(element->scene);
 }
 
 void kakera_RotateElement(kakera_Element * element, double angle)
@@ -376,7 +366,7 @@ void kakera_RotateElement(kakera_Element * element, double angle)
             node->data->rotateAngle = angle;
         }
     }
-    /*if (element->scene->window->usingDirtyRect)
+    if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;
         info.rotate.positionAndSize = {
@@ -385,12 +375,13 @@ void kakera_RotateElement(kakera_Element * element, double angle)
             element->displaySize.w,
             element->displaySize.h
         };
-        kakera_private::PushRefreshEvent(RefreshType::Refresh_Rotate, info);
+        kakera_private::PushRefreshEvent(element->scene, RefreshType::Refresh_Rotate, info);
     }
     else
     {
-        kakera_private::PushRefreshEvent();
-    }*/
+        kakera_private::PushRefreshEvent(element->scene);
+    }
+    //kakera_private::PushRefreshEvent(element->scene);
 }
 
 void kakera_StopRotateElement(kakera_Element * element)
@@ -420,7 +411,7 @@ void * kakera_ReadDataFromElement(kakera_Element * element, const char * name)
     }
 }
 
-void kakera_SetElementReceiveInput(kakera_Element * element, bool receive)
+void kakera_SetElementReceiveInput(kakera_Element * element, kakera_Boolean receive)
 {
     kakera_private::CheckNullPointer(element);    
     element->isReceiveInput = receive;

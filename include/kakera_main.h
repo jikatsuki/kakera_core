@@ -33,6 +33,9 @@ extern "C"
 
 extern KAKERA_EXPORT void kakera_Initialize();
 extern KAKERA_EXPORT void kakera_Terminate();
+typedef unsigned int(*kakera_TimerCallback)(unsigned int, void*);
+extern KAKERA_EXPORT int kakera_SetTimer(unsigned int interval, kakera_TimerCallback callback, void* userdata);
+extern KAKERA_EXPORT void kakera_DestroyTimer(int timerID);
 
 #ifdef __cplusplus
 }

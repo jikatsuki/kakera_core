@@ -20,6 +20,11 @@ typedef struct {
     int x, y, w, h;
 } kakera_Rectangle;
 
+typedef enum {
+    KAKERA_FALSE,
+    KAKERA_TRUE
+} kakera_Boolean;
+
 #ifdef __cplusplus
 }
 #endif

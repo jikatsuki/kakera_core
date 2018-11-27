@@ -30,6 +30,7 @@ struct kakera_Window
     kakera_Event event;
     void* userdata = nullptr;
     bool usingDirtyRect = false;
+    bool isGameRender = false;
 };
 
 struct kakera_Scene
@@ -41,6 +42,8 @@ struct kakera_Scene
     kakera_Element* mouseEnteredElement = nullptr;
     kakera_Element* focusElement = nullptr;
     void* userdata = nullptr;
+    bool isRefresh = false;
+    SDL_Rect* dirtyArea = nullptr;
 };
 
 struct kakera_Element

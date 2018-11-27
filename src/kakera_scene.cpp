@@ -5,12 +5,11 @@
 #include "kakera_element.h"
 #include "kakera_part_implementation.h"
 #include "kakera_tools.hpp"
+#include "kakera_private_apis.h"
 #include <forward_list>
 #include <map>
 #include <mutex>
 #include <future>
-
-KAKERA_PRIVATE_USING_REFRESH_EVENT
 
 using namespace std;
 using namespace kakera_private;
@@ -148,5 +147,5 @@ void kakera_StartScene(kakera_Scene* scene, void* userdata)
     }
     scene->window->activeScene = scene;
     kakera_private::RunCallback(scene, KAKERA_SCENE_ON_START);
-    kakera_private::PushRefreshEvent();
+    kakera_private::PushRefreshEvent(scene);
 }

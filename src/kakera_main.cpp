@@ -28,8 +28,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 #endif //!_WIN32
 
-Uint32 kakera_RefreshEvent;
-
 void kakera_Initialize()
 {
 #ifdef _WIN32
@@ -37,9 +35,6 @@ void kakera_Initialize()
 #endif //!_WIN32
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
-    kakera_RefreshEvent = SDL_RegisterEvents(1);
-    //Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID);
-    //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 }
 
 void kakera_Terminate()
@@ -47,4 +42,15 @@ void kakera_Terminate()
     //Mix_Quit();
     TTF_Quit();
     SDL_Quit();
+}
+
+int kakera_SetTimer(unsigned int interval, kakera_TimerCallback callback, void * userdata)
+{
+    SDL_TimerID timer = SDL_AddTimer(interval, callback, userdata);
+    return timer;
+}
+
+void kakera_DestroyTimer(int timerID)
+{
+    SDL_RemoveTimer(timerID);
 }

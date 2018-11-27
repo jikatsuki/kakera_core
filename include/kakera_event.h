@@ -13,7 +13,8 @@ typedef enum {
     KAKERA_SCENE_ON_CREATE,
     KAKERA_SCENE_ON_DESTROY,
     KAKERA_SCENE_ON_START,
-    KAKERA_SCENE_ON_STOP
+    KAKERA_SCENE_ON_STOP,
+    KAKERA_SCENE_ON_RESIZED
 } kakera_SceneEvents;
 
 typedef void(*kakera_SceneEventCallback)(kakera_Scene*);
@@ -33,8 +34,7 @@ typedef enum {
     KAKERA_ELEMENT_ON_MOUSE_MOVE,
     KAKERA_ELEMENT_ON_MOUSE_UP,
     KAKERA_ELEMENT_ON_MOUSE_WHEEL_SCROLL,
-    KAKERA_ELEMENT_ON_TEXT_INPUT,
-    KAKERA_ELEMENT_ON_FRAME_REFRESH
+    KAKERA_ELEMENT_ON_TEXT_INPUT
 } kakera_ElementEvents;
 
 typedef void(*kakera_ElementEventCallback)(kakera_Element*);
@@ -49,6 +49,13 @@ typedef enum {
     KAKERA_MOUSE_BUTTON_PRESSED,
     KAKERA_MOUSE_BUTTON_RELEASED
 } kakera_MouseButtonStatus;
+
+typedef enum {
+    KAKERA_MOUSE_WHEEL_UP,
+    KAKERA_MOUSE_WHEEL_DOWN,
+    KAKERA_MOUSE_WHEEL_LEFT,
+    KAKERA_MOUSE_WHEEL_RIGHT
+} kakera_MouseWheelDirection;
 
 typedef struct {
     int x, y;
@@ -147,7 +154,6 @@ typedef struct {
     kakera_MouseButton button;
     kakera_MouseButtonStatus status;
     kakera_Point pointer;
-    kakera_Point wheel;
 } kakera_MouseEvent;
 
 typedef struct {
@@ -155,6 +161,8 @@ typedef struct {
 } kakera_KeyboardEvent;
 
 typedef struct {
+    kakera_MouseWheelDirection direction;
+    int distance;
 } kakera_WheelEvent;
 
 typedef union {
