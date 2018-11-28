@@ -25,6 +25,11 @@ typedef enum {
     KAKERA_TRUE
 } kakera_Boolean;
 
+typedef struct {
+    int w, h;
+    char* pixels;
+} kakera_Pixels;
+
 #ifdef __cplusplus
 }
 #endif

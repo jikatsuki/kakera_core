@@ -18,6 +18,7 @@ extern "C"
 #define kakera_InitailizeElement(element,name) kakera_InitailizeElementComplex(element, KAKERA_ELEMENT_TYPE_STATIC, KAKERA_POSREFER_PARENT, name)
 #define kakera_GetPixelsFromWholePicture(picture) kakera_GetPixelsFromPicture(picture, NULL)
 #define kakera_GetWindowFromElement(element) kakera_GetWindowFromScene(kakera_GetSceneFromElement(element))
+#define kakera_SetElementContent(element,pixels) kakera_SetElementContentComplex(element, pixels, KAKERA_FALSE)
 
 #ifdef __cplusplus
 }

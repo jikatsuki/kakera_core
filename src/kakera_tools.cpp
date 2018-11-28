@@ -76,3 +76,29 @@ SDL_Rect * kakera_private::ConvertRect(const kakera_Rectangle * rect)
     result->h = rect->h;
     return result;
 }
+
+kakera_Pixels * kakera_private::ClipPixels(const kakera_Pixels * src, SDL_Rect * rect)
+{
+    if (src->w == rect->w && src->h == rect->h)
+    {
+        kakera_Pixels* result = new kakera_Pixels;
+        memmove(result, src, sizeof(kakera_Pixels));
+        return result;
+    }
+    else
+    {
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(src->pixels, src->w, src->h, 32, src->w * 4, SDL_PIXELFORMAT_RGBA8888);
+        SDL_Surface* clipSurface = SDL_CreateRGBSurfaceWithFormat(0, rect->w, rect->h, 32, SDL_PIXELFORMAT_RGBA8888);
+        SDL_BlitSurface(surface, rect, clipSurface, NULL);
+        SDL_FreeSurface(surface);
+        kakera_Pixels* result = new kakera_Pixels;
+        result->w = rect->w;
+        result->h = rect->h;
+        int pixelSize = clipSurface->pitch * clipSurface->h;
+        result->pixels = new char[pixelSize];
+        memmove(result->pixels, clipSurface->pixels, pixelSize);
+        SDL_FreeSurface(clipSurface);
+        return result;
+    }
+    return nullptr;
+}

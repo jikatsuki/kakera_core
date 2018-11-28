@@ -68,6 +68,8 @@ namespace kakera_private
     {
         return boolean == KAKERA_TRUE ? true : false;
     }
+
+    kakera_Pixels* ClipPixels(const kakera_Pixels* src, SDL_Rect* rect);
 }
 
 #endif // !KAKERA_CORE_TOOLS

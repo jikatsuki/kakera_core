@@ -296,3 +296,10 @@ void kakera_private::RefreshRect(kakera_Window * window, SDL_Rect* rect)
     }
     SDL_RenderPresent(window->renderer);
 }
+
+void kakera_private::DeletePixels(kakera_Pixels ** pixels)
+{
+    //delete (*pixels)->pixels;
+    delete *pixels;
+    *pixels = nullptr;
+}

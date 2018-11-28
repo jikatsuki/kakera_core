@@ -198,31 +198,36 @@ kakera_Scene * kakera_GetSceneFromElement(kakera_Element * element)
     return element->scene;
 }
 
-char * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
+kakera_Pixels * kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b)
 {
     SDL_Surface* RAWSurface = SDL_CreateRGBSurface(0, w, h, 32, 0, 0, 0, 0);
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
-    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, r, g, b));
+    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, r, g, b));        
+    kakera_Pixels* result = new kakera_Pixels;
+    result->w = w;
+    result->h = h;
     int pixelSize = surface->pitch * surface->h;
-    char* result = new char[pixelSize];
-    memcpy(result, surface->pixels, pixelSize);
+    result->pixels = new char[pixelSize];
+    memmove(result->pixels, surface->pixels, pixelSize);
     SDL_FreeSurface(surface);
     return result;
 }
 
-char * kakera_GetPixelsFromPicture(kakera_File * picture, kakera_Rectangle* clipArea)
+kakera_Pixels * kakera_GetPixelsFromPicture(kakera_File * picture, kakera_Rectangle* clipArea)
 {
     kakera_private::CheckNullPointer(picture);
     SDL_Surface* RAWSurface = IMG_Load_RW(SDL_RWFromConstMem(picture->data, picture->size), 1);
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
-    char* result;
+    kakera_Pixels* result = new kakera_Pixels;
     if (clipArea == nullptr)
     {
+        result->w = surface->w;
+        result->h = surface->h;
         int pixelSize = surface->pitch * surface->h;
-        result = new char[pixelSize];
-        memcpy(result, surface->pixels, pixelSize);
+        result->pixels = new char[pixelSize];
+        memmove(result->pixels, surface->pixels, pixelSize);
         SDL_FreeSurface(surface);
     }
     else
@@ -232,15 +237,17 @@ char * kakera_GetPixelsFromPicture(kakera_File * picture, kakera_Rectangle* clip
         SDL_BlitSurface(surface, clipRect, clipSurface, NULL);
         delete clipRect;
         SDL_FreeSurface(surface);
+        result->w = clipArea->w;
+        result->h = clipArea->h;
         int pixelSize = clipSurface->pitch * clipSurface->h;
-        result = new char[pixelSize];
-        memcpy(result, clipSurface->pixels, pixelSize);
+        result->pixels = new char[pixelSize];
+        memmove(result->pixels, clipSurface->pixels, pixelSize);
         SDL_FreeSurface(clipSurface);
     }
     return result;
 }
 
-char * kakera_GetPixelsFromText(kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text, int* finalW, int* finalH)
+kakera_Pixels * kakera_GetPixelsFromText(kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text)
 {
     kakera_private::CheckNullPointer(font);
     TTF_Font* SDLFont = TTF_OpenFontRW(SDL_RWFromConstMem(font->data, font->size), 1, size);
@@ -248,17 +255,18 @@ char * kakera_GetPixelsFromText(kakera_File * font, int size, uint8_t r, uint8_t
     SDL_Surface* RAWSurface = TTF_RenderUTF8_Blended(SDLFont, text, { r, g, b });
     SDL_Surface* surface = SDL_ConvertSurfaceFormat(RAWSurface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(RAWSurface);
-    TTF_CloseFont(SDLFont);
+    TTF_CloseFont(SDLFont);    
+    kakera_Pixels* result = new kakera_Pixels;
+    result->w = surface->w;
+    result->h = surface->h;
     int pixelSize = surface->pitch * surface->h;
-    char* result = new char[pixelSize];
-    memcpy(result, surface->pixels, pixelSize);
-    *finalW = surface->w;
-    *finalH = surface->h;
+    result->pixels = new char[pixelSize];
+    memmove(result->pixels, surface->pixels, pixelSize);
     SDL_FreeSurface(surface);
     return result;
 }
 
-void kakera_SetElementContent(kakera_Element* element, void* pixels)
+void kakera_SetElementContentComplex(kakera_Element* element, kakera_Pixels* pixels, kakera_Boolean isRepeat)
 {
     kakera_private::CheckNullPointer(element);    
     if (element->resizeFlag && element->texture != nullptr)
@@ -272,7 +280,83 @@ void kakera_SetElementContent(kakera_Element* element, void* pixels)
         element->texture = SDL_CreateTexture(element->scene->window->renderer, element->SDLFormat, element->SDLAccess, element->realSize.w, element->realSize.h);
         SDL_SetTextureBlendMode(element->texture, SDL_BLENDMODE_BLEND);
     }
-    SDL_UpdateTexture(element->texture, NULL, pixels, element->realSize.w * 4);
+
+    if (kakera_private::ConvertBool(isRepeat))
+    {
+        int extraW, extraH;
+        int repeatTimeX = element->realSize.w / pixels->w;
+        int repeatTimeY = element->realSize.h / pixels->h;
+        bool specialX = false, specialY = false;
+        if (element->realSize.w % pixels->w == 0)
+            extraW = 0;
+        else
+        {
+            extraW = element->realSize.w - pixels->w * repeatTimeX;
+            specialX = true;
+        }
+
+        if (element->realSize.h % pixels->h == 0)
+            extraH = 0;
+        else
+        {
+            extraH = element->realSize.h - pixels->h * repeatTimeY;
+            specialY = true;
+        }
+
+        SDL_Rect fillRect = { 0, 0, pixels->w, pixels->h };
+        for (int i = 0; i < repeatTimeY; i++)
+        {
+            fillRect.y = fillRect.y + i * pixels->h;
+            for (int j = 0; j < repeatTimeX; j++)
+            {
+                fillRect.x = fillRect.x + j * pixels->w;
+                SDL_UpdateTexture(element->texture, &fillRect, pixels->pixels, pixels->w * 4);
+            }
+            fillRect.x = 0;
+        }
+
+        if (specialX)
+        {
+            fillRect = { element->realSize.w - extraW, 0, extraW, pixels->h };
+            SDL_Rect clipArea = { 0, 0, extraW, pixels->h };
+            kakera_Pixels* cliped = kakera_private::ClipPixels(pixels, &clipArea);
+            for (int i = 0; i < repeatTimeY; i++)
+            {
+                fillRect.y = fillRect.y + i * pixels->h;
+                SDL_UpdateTexture(element->texture, &fillRect, cliped->pixels, extraW * 4);
+            }
+            kakera_private::DeletePixels(&cliped);
+        }
+
+        if (specialY)
+        {
+            fillRect = { 0, element->realSize.h - extraH, pixels->w, extraH };
+            SDL_Rect clipArea = { 0, 0, pixels->w, extraH };
+            kakera_Pixels* cliped = kakera_private::ClipPixels(pixels, &clipArea);
+            for (int i = 0; i < repeatTimeX; i++)
+            {
+                fillRect.x = fillRect.x + i * pixels->w;
+                SDL_UpdateTexture(element->texture, &fillRect, pixels->pixels, pixels->w * 4);
+            }
+            kakera_private::DeletePixels(&cliped);
+        }
+
+        if (specialX && specialY)
+        {
+            fillRect = { element->realSize.w - extraW, element->realSize.h - extraH, extraW, extraH };
+            SDL_Rect clipArea = { 0, 0, extraW, extraH };
+            kakera_Pixels* cliped = kakera_private::ClipPixels(pixels, &clipArea);
+            SDL_UpdateTexture(element->texture, &fillRect, cliped->pixels, extraW * 4);
+            kakera_private::DeletePixels(&cliped);
+        }
+    }
+    else
+    {
+        SDL_UpdateTexture(element->texture, NULL, pixels->pixels, element->realSize.w * 4);
+    }
+
+    kakera_private::DeletePixels(&pixels);
+
     if (element->scene->window->usingDirtyRect)
     {
         RefreshInfo info;

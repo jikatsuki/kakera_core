@@ -50,6 +50,8 @@ namespace kakera_private
     void RefreshAll(kakera_Window* window);
 
     void RefreshRect(kakera_Window* window, SDL_Rect* rect);
+
+    void DeletePixels(kakera_Pixels** pixels);
 }
 
 #endif //!KAKERA_CORE_PRIVATE_APIS
