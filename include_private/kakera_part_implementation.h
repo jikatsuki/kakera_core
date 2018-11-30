@@ -13,7 +13,6 @@
 #include <string>
 #include <cstdlib>
 #include <list>
-#include "pugixml/pugixml.hpp"
 
 using namespace std;
 using namespace kakera_private;
@@ -70,15 +69,6 @@ struct kakera_Element
     bool isReceiveInput = false;
     string receivedInput;
     string receivedEditingInput;
-};
-
-struct kakera_FilePackage
-{
-    FILE* data;
-    pugi::xml_document index;
-    const char* path;
-    kakera_CryptMethod encrypt = nullptr;
-    kakera_CryptMethod decrypt = nullptr;
 };
 
 #endif //!KAKERA_CORE_PART_IMPLEMENTATION
