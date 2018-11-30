@@ -377,7 +377,7 @@ void kakera_SetElementContentComplex(kakera_Element* element, kakera_Pixels* pix
 
 void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixels, void * UPixels, void * VPixels, int YPitch, int UPitch, int VPitch)
 {
-    kakera_private::CheckNullPointer(element);    
+    kakera_private::CheckNullPointer(element);
     if (element->SDLFormat != SDL_PIXELFORMAT_IYUV)
     {
         return;
@@ -404,6 +404,17 @@ void kakera_SetElementContentByYUVPixels(kakera_Element * element, void * YPixel
         kakera_private::PushRefreshEvent(element->scene);
     }
     //kakera_private::PushRefreshEvent(element->scene);
+}
+
+void kakera_DrawPixelOnElement(kakera_Element * element, int x, int y, uint8_t r, uint8_t g, uint8_t b)
+{
+    kakera_private::CheckNullPointer(element);
+    kakera_private::CheckNullPointer(element->texture);
+    SDL_Rect pixelRect = { x, y, 1, 1 };
+    SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+    Uint32 color = SDL_MapRGBA(format, r, g, b, 255);
+    SDL_UpdateTexture(element->texture, &pixelRect, &color, 4);
+    SDL_FreeFormat(format);
 }
 
 void kakera_SetElementOpacity(kakera_Element * element, uint8_t opacity)

@@ -45,7 +45,7 @@ int kakera_GetRawFileSize(kakera_File * file)
 void kakera_DestroyFile(kakera_File ** file)
 {
     kakera_private::CheckNullPointer(*file);
-    delete (*file)->data;
+    delete[] (*file)->data;
     delete *file;
     *file = nullptr;
 }
@@ -81,7 +81,7 @@ kakera_FilePackage * kakera_CreateNewFilePackage(const char* path)
     fwrite(writer.result.data(), sizeof(char), sizeof(char) * writer.result.size(), package->data);
     char* emptyString = kakera_private_CreateEmptyString(4096 - writer.result.size());
     fwrite(emptyString, sizeof(char), sizeof(char) * (4096 - writer.result.size()), package->data);
-    delete emptyString;
+    delete[] emptyString;
     return package;
 }
 
@@ -94,7 +94,7 @@ kakera_FilePackage * kakera_LoadFilePackage(const char* path)
     char* rawXMLIndex = new char[sizeof(char) * 4096];
     fread(rawXMLIndex, sizeof(char), sizeof(char) * 4096, package->data);
     package->index.load_string(rawXMLIndex);
-    delete rawXMLIndex;
+    delete[] rawXMLIndex;
     return package;
 }
 
@@ -193,7 +193,7 @@ void kakera_AddFileToPackage(kakera_FilePackage * package, kakera_File * file, c
     fwrite(writer.result.data(), sizeof(char), sizeof(char) * writer.result.size(), package->data);
     char* emptyString = kakera_private_CreateEmptyString(4096 - writer.result.size());
     fwrite(emptyString, sizeof(char), sizeof(char) * (4096 - writer.result.size()), package->data);
-    delete emptyString;
+    delete[] emptyString;
 }
 
 void kakera_SetPackageEncryptMethod(kakera_FilePackage * package, kakera_CryptMethod method)

@@ -299,7 +299,7 @@ void kakera_private::RefreshRect(kakera_Window * window, SDL_Rect* rect)
 
 void kakera_private::DeletePixels(kakera_Pixels ** pixels)
 {
-    //delete (*pixels)->pixels;
+    delete[] (*pixels)->pixels;
     delete *pixels;
     *pixels = nullptr;
 }
