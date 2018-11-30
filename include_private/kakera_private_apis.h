@@ -4,6 +4,8 @@
 #include "kakera_header.h"
 #include "kakera_declaration.h"
 #include "kakera_part_implementation.h"
+#include "kakera_timer.h"
+#include "kakera_structs.hpp"
 #include "kakera_tools.hpp"
 
 using namespace std;
@@ -52,6 +54,8 @@ namespace kakera_private
     void RefreshRect(kakera_Window* window, SDL_Rect* rect);
 
     void DeletePixels(kakera_Pixels** pixels);
+
+    map<int, TimerInfo*>::iterator DestroyTimer(int id);
 }
 
 #endif //!KAKERA_CORE_PRIVATE_APIS

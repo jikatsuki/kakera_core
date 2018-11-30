@@ -7,11 +7,8 @@
 #include "kakera_file.h"
 #include "kakera_tools.hpp"
 #include "kakera_private_apis.h"
-#include <forward_list>
+#include "kakera_timer.h"
 #include <iostream>
-#include <thread>
-#include <mutex>
-#include <future>
 #include <cmath>
 #include <cstring>
 
@@ -411,6 +408,17 @@ void kakera_StartWindow(kakera_Window ** window, kakera_WindowRenderMode mode, v
         (*window)->isGameRender = true;
         while (!(*window)->isQuit)
         {
+            TimerTable& timerTable = TimerTable::getInstance();
+            for (auto iter = timerTable.table.begin(); iter != timerTable.table.end(); iter++)
+            {
+                TimerInfo* info = iter->second;
+                if (info->shouldCollected)
+                {
+                    iter = kakera_private::DestroyTimer(iter->first);
+                    if (iter == timerTable.table.end())
+                        break;
+                }
+            }
             SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, [](Uint32 interval, void * param) -> Uint32 {
                 kakera_Window* window = reinterpret_cast<kakera_Window*>(param);
                 SDL_SemPost(window->FPSSem);
@@ -438,6 +446,17 @@ void kakera_StartWindow(kakera_Window ** window, kakera_WindowRenderMode mode, v
     {
         while (!(*window)->isQuit)
         {
+            TimerTable& timerTable = TimerTable::getInstance();
+            for (auto iter = timerTable.table.begin(); iter != timerTable.table.end(); iter++)
+            {
+                TimerInfo* info = iter->second;
+                if (info->shouldCollected)
+                {
+                    iter = kakera_private::DestroyTimer(iter->first);
+                    if (iter == timerTable.table.end())
+                        break;
+                }
+            }
             SDL_TimerID FPSTimer = SDL_AddTimer(1000 / (*window)->FPS, [](Uint32 interval, void * param) -> Uint32 {
                 kakera_Window* window = reinterpret_cast<kakera_Window*>(param);
                 SDL_SemPost(window->FPSSem);

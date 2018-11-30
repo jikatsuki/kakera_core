@@ -7,6 +7,8 @@
 #include <stack>
 #include <queue>
 #include <type_traits>
+#include <chrono>
+#include "kakera_timer.h"
 
 using namespace std;
 
@@ -190,6 +192,16 @@ namespace kakera_private
         SDL_Rect* positionAndSize = nullptr;
         SDL_Rect* cropArea = nullptr;
         bool isRender = false;
+    };
+
+    struct TimerInfo
+    {
+        kakera_TimerCallback callback = nullptr;
+        void* userdata = nullptr;
+        bool isLimited = false;
+        bool shouldCollected = false;
+        chrono::high_resolution_clock::time_point startTime;
+        chrono::high_resolution_clock::time_point endTime;        
     };
 }
 

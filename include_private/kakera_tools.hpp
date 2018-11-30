@@ -3,6 +3,7 @@
 
 #include "kakera_header.h"
 #include "kakera_declaration.h"
+#include "kakera_structs.hpp"
 #include <string>
 #include <vector>
 #include <sstream>
@@ -70,6 +71,20 @@ namespace kakera_private
     }
 
     kakera_Pixels* ClipPixels(const kakera_Pixels* src, SDL_Rect* rect);
+
+    class TimerTable
+    {
+    public:
+        static TimerTable& getInstance()
+        {
+            static TimerTable _instance;
+            return _instance;
+        }
+
+        map<int, TimerInfo*> table;
+    };
+
+    Uint32 SDLTimerCallback(Uint32 interval, void * param);
 }
 
 #endif // !KAKERA_CORE_TOOLS

@@ -53,8 +53,9 @@ extern KAKERA_EXPORT void               kakera_SetWindowIcon(kakera_Window* wind
 extern KAKERA_EXPORT kakera_WindowFPS   kakera_GetWindowFPS(kakera_Window* window);
 extern KAKERA_EXPORT void               kakera_SetWindowFPS(kakera_Window* window, kakera_WindowFPS FPS);
 extern KAKERA_EXPORT kakera_Event*      kakera_GetWindowEvent(kakera_Window* window);
-extern KAKERA_EXPORT void               kakera_SetUsingDirtyRectRender(kakera_Window* window, kakera_Boolean isUse);
 extern KAKERA_EXPORT void               kakera_StartWindow(kakera_Window** window, kakera_WindowRenderMode mode, void* userdata);
+
+extern KAKERA_EXPERIMENTAL KAKERA_EXPORT void kakera_SetUsingDirtyRectRender(kakera_Window* window, kakera_Boolean isUse);
 
 #ifdef __cplusplus
 }

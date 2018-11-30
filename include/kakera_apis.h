@@ -13,6 +13,7 @@ extern "C"
 #include "kakera_element.h"
 #include "kakera_file.h"
 #include "kakera_event.h"
+#include "kakera_timer.h"
 
 #define kakera_SetRootElementForScene(scene,element) kakera_AddElementToScene(scene, element, NULL)
 #define kakera_InitailizeElement(element,name) kakera_InitailizeElementComplex(element, KAKERA_ELEMENT_TYPE_STATIC, KAKERA_POSREFER_PARENT, name)

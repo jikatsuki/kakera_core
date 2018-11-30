@@ -102,3 +102,24 @@ kakera_Pixels * kakera_private::ClipPixels(const kakera_Pixels * src, SDL_Rect *
     }
     return nullptr;
 }
+
+Uint32 kakera_private::SDLTimerCallback(Uint32 interval, void * param)
+{
+    TimerInfo* info = reinterpret_cast<TimerInfo*>(param);
+    int result = info->callback(info->userdata);
+    if (result != 0)
+        return 0;
+    else
+    {
+        if (info->isLimited)
+        {
+            chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
+            if (now >= info->endTime)
+            {
+                info->shouldCollected = true;
+                return 0;
+            }
+        }
+    }
+    return interval;
+}

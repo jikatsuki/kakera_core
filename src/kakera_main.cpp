@@ -43,14 +43,3 @@ void kakera_Terminate()
     TTF_Quit();
     SDL_Quit();
 }
-
-int kakera_SetTimer(unsigned int interval, kakera_TimerCallback callback, void * userdata)
-{
-    SDL_TimerID timer = SDL_AddTimer(interval, callback, userdata);
-    return timer;
-}
-
-void kakera_DestroyTimer(int timerID)
-{
-    SDL_RemoveTimer(timerID);
-}

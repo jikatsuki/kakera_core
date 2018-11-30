@@ -303,3 +303,17 @@ void kakera_private::DeletePixels(kakera_Pixels ** pixels)
     delete *pixels;
     *pixels = nullptr;
 }
+
+map<int, TimerInfo*>::iterator kakera_private::DestroyTimer(int id)
+{
+    TimerTable& timeTable = TimerTable::getInstance();
+    auto iter = timeTable.table.find(id);
+    if (iter != timeTable.table.end())
+    {
+        TimerInfo* info = iter->second;
+        delete info;
+        return timeTable.table.erase(iter);
+    }
+    else
+        return timeTable.table.end();
+}
