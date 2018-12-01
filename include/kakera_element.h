@@ -48,9 +48,9 @@ extern KAKERA_EXPORT kakera_Scene*      kakera_GetSceneFromElement(kakera_Elemen
 extern KAKERA_EXPORT kakera_Pixels*     kakera_GetPixelsFromColor(int w, int h, uint8_t r, uint8_t g, uint8_t b);
 extern KAKERA_EXPORT kakera_Pixels*     kakera_GetPixelsFromPicture(kakera_File * picture, kakera_Rectangle* clipArea);
 extern KAKERA_EXPORT kakera_Pixels*     kakera_GetPixelsFromText(kakera_File * font, int size, uint8_t r, uint8_t g, uint8_t b, int style, const char * text);
+extern KAKERA_EXPORT void               kakera_DrawPointOnPixels(kakera_Pixels* pixels, int x, int y, uint8_t r, uint8_t g, uint8_t b);
 extern KAKERA_EXPORT void               kakera_SetElementContentComplex(kakera_Element* element, kakera_Pixels* pixels, kakera_Boolean isRepeat);
 extern KAKERA_EXPORT void               kakera_SetElementContentByYUVPixels(kakera_Element* element, void* YPixels, void* UPixels, void* VPixels, int YPitch, int UPitch, int VPitch);
-extern KAKERA_EXPORT void               kakera_DrawPixelOnElement(kakera_Element* element, int x, int y, uint8_t r, uint8_t g, uint8_t b);
 extern KAKERA_EXPORT void               kakera_SetElementOpacity(kakera_Element* element, uint8_t opacity);
 extern KAKERA_EXPORT void               kakera_RotateElement(kakera_Element* element, double angle);
 extern KAKERA_EXPORT void               kakera_StopRotateElement(kakera_Element* element);
